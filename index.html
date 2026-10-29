@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>特約事項工作台｜林宜慶地政士事務所</title>
+  <style>
+    :root { color-scheme:light; --ink:#202b29; --muted:#697471; --line:#dbe2df; --green:#245c47; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#f5f7f7; color:var(--ink); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; letter-spacing:0; }
+    .site-header { background:#fff; border-bottom:1px solid var(--line); }
+    .header-inner { max-width:1120px; min-height:88px; margin:auto; padding:20px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+    .logo { display:block; width:340px; min-width:0; max-width:100%; height:auto; }
+    .demo-mark { flex-shrink:0; color:var(--muted); font-size:13px; white-space:nowrap; }
+    main { max-width:1120px; margin:auto; padding:48px 28px 40px; }
+    .page-heading { margin-bottom:34px; }
+    .office { margin:0 0 10px; color:var(--muted); font-size:14px; }
+    h1 { margin:0; font-size:30px; line-height:1.4; font-weight:700; }
+    .category { display:grid; grid-template-columns:100px minmax(0,1fr); gap:24px; padding:28px 0; border-top:1px solid var(--line); }
+    .category h2 { margin:4px 0 0; font-size:16px; font-weight:700; }
+    .destinations { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .destinations.land { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .destination { min-width:0; min-height:154px; padding:22px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); text-decoration:none; display:flex; flex-direction:column; justify-content:space-between; gap:22px; transition:border-color .15s,box-shadow .15s; }
+    .destination:hover { border-color:var(--green); box-shadow:0 3px 12px #20392f0c; }
+    .destination:focus-visible { outline:3px solid var(--green); outline-offset:4px; }
+    .destination h3 { margin:0; font-size:23px; line-height:1.5; overflow-wrap:anywhere; }
+    .destination-bottom { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .document-label { color:var(--muted); font-size:13px; }
+    .open-arrow { display:flex; align-items:center; justify-content:center; flex:none; width:30px; height:30px; color:var(--green); font-size:25px; line-height:1; }
+    footer { max-width:1120px; margin:auto; padding:0 28px 28px; color:var(--muted); font-size:12px; }
+    .footer-inner { border-top:1px solid var(--line); padding-top:18px; }
+    @media (prefers-reduced-motion:reduce) { .destination { transition:none; } }
+    @media (max-width:800px) {
+      .category { grid-template-columns:1fr; gap:16px; }
+      .category h2 { margin:0; }
+      .destinations { gap:12px; }
+      .destination { padding:18px; }
+      .destination h3 { font-size:21px; }
+    }
+    @media (max-width:560px) {
+      .header-inner { min-height:76px; padding:18px 20px; gap:12px; }
+      .logo { width:275px; }
+      .demo-mark { font-size:11px; }
+      main { padding:30px 20px; }
+      h1 { font-size:27px; }
+      .page-heading { margin-bottom:24px; }
+      .category { padding:22px 0; }
+      .destinations,.destinations.land { grid-template-columns:1fr; }
+      .destination { min-height:104px; flex-direction:row; align-items:center; gap:12px; }
+      .destination-bottom { flex-direction:column; gap:4px; align-items:flex-end; }
+      .document-label { font-size:12px; white-space:nowrap; }
+      footer { padding:0 20px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <img class="logo" src="assets/yiqing-header.png" width="2580" height="271" alt="宜慶地政，服務專線 06-2951356" />
+      <span class="demo-mark">DEMO</span>
+    </div>
+  </header>
+  <main>
+    <div class="page-heading">
+      <p class="office">林宜慶地政士事務所</p>
+      <h1>特約事項工作台</h1>
+    </div>
+    <section class="category" aria-labelledby="land-heading">
+      <h2 id="land-heading">土地類</h2>
+      <div class="destinations land">
+        <a class="destination" href="real_estate_chatbot_農地.html" target="_blank" rel="noopener" title="在新分頁開啟農地特約事項網頁" aria-label="農地特約事項網頁（另開新分頁）">
+          <h3>農地</h3>
+          <div class="destination-bottom"><span class="document-label">特約事項</span><span class="open-arrow" aria-hidden="true">&nearr;</span></div>
+        </a>
+        <a class="destination" href="real_estate_chatbot_建地.html" target="_blank" rel="noopener" title="在新分頁開啟建地特約事項網頁" aria-label="建地特約事項網頁（另開新分頁）">
+          <h3>建地</h3>
+          <div class="destination-bottom"><span class="document-label">特約事項</span><span class="open-arrow" aria-hidden="true">&nearr;</span></div>
+        </a>
+      </div>
+    </section>
+    <section class="category" aria-labelledby="building-heading">
+      <h2 id="building-heading">建物類</h2>
+      <div class="destinations">
+        <a class="destination" href="real_estate_chatbot_透天.html" target="_blank" rel="noopener" title="在新分頁開啟透天中古屋特約事項網頁" aria-label="透天中古屋特約事項網頁（另開新分頁）">
+          <h3>透天中古屋</h3>
+          <div class="destination-bottom"><span class="document-label">特約事項</span><span class="open-arrow" aria-hidden="true">&nearr;</span></div>
+        </a>
+        <a class="destination" href="real_estate_chatbot_集合住宅.html" target="_blank" rel="noopener" title="在新分頁開啟集合住宅特約事項網頁" aria-label="集合住宅特約事項網頁（另開新分頁）">
+          <h3>集合住宅</h3>
+          <div class="destination-bottom"><span class="document-label">特約事項</span><span class="open-arrow" aria-hidden="true">&nearr;</span></div>
+        </a>
+        <a class="destination" href="real_estate_chatbot_廠房.html" target="_blank" rel="noopener" title="在新分頁開啟廠房特約事項網頁" aria-label="廠房特約事項網頁（另開新分頁）">
+          <h3>廠房</h3>
+          <div class="destination-bottom"><span class="document-label">特約事項</span><span class="open-arrow" aria-hidden="true">&nearr;</span></div>
+        </a>
+      </div>
+    </section>
+  </main>
+  <footer><div class="footer-inner">林宜慶地政士事務所</div></footer>
+</body>
+</html>

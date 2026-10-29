@@ -1,0 +1,2833 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>廠房特約事項網頁demo</title>
+  <style>
+    :root {
+      --ink:#17211d; --muted:#68746e; --line:#d8dedb; --soft:#f5f7f6;
+      --green:#245c47; --green-2:#34745a; --amber:#a04b11; --amber-bg:#fff7ed;
+      --danger:#a72d2d; --white:#fff; --shadow:0 8px 24px rgba(25,43,35,.08);
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:#edf1ef; font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; letter-spacing:0; }
+    button,input,select,textarea { font:inherit; letter-spacing:0; }
+    button { cursor:pointer; }
+    body > header { min-height:64px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:16px; background:#fff; border-bottom:1px solid var(--line); }
+    .brand h1 { margin:0; font-size:20px; }
+    .brand span { display:block; margin-top:3px; color:var(--muted); font-size:12px; }
+    .header-actions,.clause-actions,.topic-actions { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+    .btn { min-height:36px; padding:7px 12px; border:1px solid transparent; border-radius:6px; background:var(--green); color:#fff; font-weight:700; }
+    .btn:hover { background:var(--green-2); }
+    .btn:disabled { opacity:.38; cursor:not-allowed; }
+    .btn.secondary { border-color:var(--line); background:#fff; color:var(--ink); }
+    .btn.danger { border-color:#e7b5b5; background:#fff; color:var(--danger); }
+    .btn.small { min-height:30px; padding:4px 8px; font-size:12px; }
+    .layout { display:grid; grid-template-columns:280px minmax(480px,1fr) minmax(360px,470px); min-height:calc(100vh - 64px); }
+    aside,main,.result-panel { min-width:0; padding:14px; }
+    aside { background:#f8faf9; border-right:1px solid var(--line); }
+    main { border-right:1px solid var(--line); }
+    .result-panel { background:#f8faf9; }
+    .side-tabs { display:grid; grid-template-columns:repeat(2,1fr); gap:4px; margin-bottom:12px; }
+    .side-tab { min-height:38px; padding:6px 4px; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--muted); font-size:12px; font-weight:700; }
+    .side-tab.active { border-color:var(--green); background:var(--green); color:#fff; }
+    .side-panel[hidden] { display:none; }
+    .section,.output-block { margin-bottom:12px; background:#fff; border:1px solid var(--line); border-radius:7px; box-shadow:var(--shadow); }
+    .section { padding:14px; }
+    .section-title,.output-title { margin:0; display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:15px; }
+    .section-subtitle { margin:7px 0 0; color:var(--muted); font-size:12px; line-height:1.6; }
+    .fields { display:grid; gap:10px; margin-top:12px; }
+    .field { display:grid; gap:5px; color:var(--muted); font-size:12px; font-weight:700; }
+    input,select,textarea { width:100%; border:1px solid #cbd3cf; border-radius:5px; background:#fff; color:var(--ink); padding:8px 9px; outline:none; }
+    input:focus,select:focus,textarea:focus { border-color:var(--green-2); box-shadow:0 0 0 2px rgba(52,116,90,.12); }
+    .question-list { display:grid; gap:12px; }
+    .question { background:#fff; border:1px solid var(--line); border-radius:7px; box-shadow:var(--shadow); overflow:hidden; }
+    .question-head { padding:13px 14px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); }
+    .question-title { margin:0; font-size:15px; line-height:1.5; }
+    .risk-tag,.tag { display:inline-flex; align-items:center; min-height:24px; padding:2px 7px; border-radius:4px; background:#edf5f1; color:var(--green); font-size:11px; font-weight:700; white-space:nowrap; }
+    .risk-tag.high { background:#fff0f0; color:var(--danger); }
+    .exclude-btn { width:30px; height:30px; padding:0; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--muted); font-size:19px; line-height:1; }
+    .question-body { padding:13px 14px; }
+    .topic-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .check-option { min-height:42px; padding:8px 9px; display:flex; align-items:flex-start; gap:8px; border:1px solid var(--line); border-radius:5px; background:var(--soft); font-size:13px; line-height:1.45; }
+    .check-option input { width:17px; height:17px; margin:1px 0 0; flex:0 0 auto; accent-color:var(--green); }
+    .topic-detail { margin-top:12px; padding:12px; border-left:3px solid var(--green-2); background:#f8faf9; }
+    .topic-detail h4 { margin:0 0 10px; font-size:14px; }
+    .topic-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+    .topic-fields .wide { grid-column:1/-1; }
+    .inline-preview { margin-top:10px; padding-top:10px; border-top:1px dashed #bdc8c2; color:#30423a; font-size:13px; line-height:1.75; }
+    .version-tools { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .version-switch { display:inline-flex; border:1px solid #bdc8c2; border-radius:5px; overflow:hidden; }
+    .version-switch button { border:0; padding:7px 12px; background:#fff; color:var(--green); }
+    .version-switch button[aria-pressed="true"] { background:var(--green); color:#fff; }
+    .version-switch button:focus-visible { outline:2px solid #b45309; outline-offset:-3px; }
+    .version-comparison { display:grid; gap:10px; margin-top:12px; }
+    .comparison-text { white-space:pre-wrap; }
+    .version-label { color:var(--muted); font-weight:400; margin-left:6px; }
+    .remedy-field { margin:12px 0; font-size:13px; }
+    .remedy-field > span { display:block; margin-bottom:5px; }
+    .remedy-menu { position:relative; }
+    .remedy-menu summary { padding:9px 11px; min-height:38px; border:1px solid var(--line); border-radius:5px; background:#fff; cursor:pointer; list-style-position:inside; }
+    .remedy-menu summary:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+    .remedy-options { position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:10; display:grid; gap:4px; padding:6px; border:1px solid var(--line); border-radius:5px; background:#fff; box-shadow:0 6px 18px #0002; }
+    .remedy-menu:not([open]) .remedy-options { display:none; }
+    .remedy-options .check-option { min-width:0; }
+    .preview-label { display:block; margin-bottom:4px; color:var(--green); font-size:11px; font-weight:700; }
+    .question.excluded .question-head { border-bottom:0; }
+    .excluded-note { padding:0 14px 13px; color:var(--muted); font-size:12px; }
+    .manage-list { display:grid; gap:8px; margin-top:10px; }
+    .manage-row { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding:8px; border:1px solid var(--line); border-radius:5px; font-size:12px; line-height:1.45; }
+    .output-title { padding:10px 12px; border-bottom:1px solid var(--line); }
+    .output-body { padding:12px; }
+    .clause-list { display:grid; gap:10px; }
+    .clause { padding:10px 11px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    .clause-head { margin-bottom:7px; display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--green); font-size:12px; font-weight:700; }
+    .clause textarea { min-height:96px; resize:vertical; border:0; padding:0; line-height:1.75; }
+    .manual-badge { display:inline-flex; align-items:center; min-height:28px; padding:3px 8px; border:1px solid #b45309; border-radius:4px; background:var(--amber-bg); color:#9a3412; font-size:12px; font-weight:700; white-space:nowrap; }
+    .manual-badge.added { border-color:#34745a; background:#edf7f2; color:#245c47; }
+    .manual-badge[hidden] { display:none; }
+    .empty-state { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+    .risk-list,.missing-list { margin:0; padding-left:20px; font-size:13px; line-height:1.65; }
+    .risk-list li.danger { color:var(--danger); }
+    .risk-list li.warn { color:var(--amber); }
+    .chat-log { height:300px; overflow:auto; padding:10px; border:1px solid var(--line); border-radius:5px; background:var(--soft); }
+    .chat-message { margin-bottom:8px; padding:8px 9px; border-radius:5px; background:#fff; font-size:13px; line-height:1.55; }
+    .chat-message.system { border-left:3px solid var(--green); }
+    .chat-compose { display:grid; gap:8px; margin-top:9px; }
+    .chat-compose textarea { min-height:74px; resize:vertical; }
+    .toast { position:fixed; left:50%; bottom:22px; z-index:20; transform:translate(-50%,18px); padding:9px 14px; border-radius:5px; background:#17211d; color:#fff; opacity:0; pointer-events:none; transition:.18s; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .print-area { display:none; }
+    @media (min-width:1181px) {
+      body { overflow:hidden; }
+      .layout { height:calc(100vh - 64px); min-height:0; overflow:hidden; }
+      aside,main,.result-panel { height:100%; overflow-y:auto; scrollbar-gutter:stable; }
+    }
+    @media (max-width:1180px) { .layout { grid-template-columns:260px 1fr; } .result-panel { grid-column:1/-1; border-top:1px solid var(--line); } main { border-right:0; } }
+    @media (max-width:760px) { body > header { align-items:flex-start; flex-direction:column; } .header-actions { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } .header-actions .btn { width:100%; } .layout { display:block; } aside,main,.result-panel { border:0; padding:10px; } .topic-options,.topic-fields { grid-template-columns:1fr; } .topic-fields .wide { grid-column:auto; } }
+    @media print {
+      @page { size:A4; margin:0; }
+      body { background:#fff; color:#000; overflow:visible; }
+      body > header,.layout,.toast { display:none !important; }
+      .print-area { display:block; font-family:"Microsoft JhengHei","Noto Sans TC",serif; font-size:12pt; line-height:1.75; }
+      .contract-page { position:relative; width:210mm; height:296.8mm; overflow:hidden; background:#fff; break-inside:avoid-page; page-break-inside:avoid; }
+      .contract-page:not(:last-child) { break-after:page; page-break-after:always; }
+      .contract-header { position:absolute; z-index:3; top:11.5mm; left:16.5mm; right:16.5mm; height:13mm; }
+      .contract-brand { position:absolute; top:0; left:0; width:82mm; height:auto; }
+      .contract-number { position:absolute; top:7mm; right:0; white-space:nowrap; font-size:11pt; }
+      .contract-number-value { display:inline-block; min-width:34mm; padding:0 1.5mm 1mm; border-bottom:.3mm solid #222; text-align:center; }
+      .contract-watermark { position:absolute; z-index:0; top:86mm; left:50%; width:105mm; transform:translateX(-50%); opacity:.13; }
+      .contract-content { position:absolute; z-index:2; top:28mm; left:18mm; right:18mm; bottom:14mm; height:auto; min-height:0; padding:0; border:0; overflow:visible; scrollbar-gutter:auto; }
+      .contract-page.is-last .contract-content { bottom:78mm; }
+      .contract-title { margin:0 0 9mm; font-family:"DFKai-SB","BiauKai","Microsoft JhengHei",serif; font-size:24pt; line-height:1.1; }
+      .contract-clauses { margin:0; padding-left:9mm; }
+      .contract-clauses li { margin-bottom:3mm; padding-left:1mm; break-inside:avoid; text-align:justify; white-space:pre-wrap; overflow-wrap:anywhere; }
+      .contract-clauses li.is-continuation { list-style:none; }
+      .contract-signatures { position:absolute; z-index:2; left:18mm; right:18mm; bottom:13.5mm; min-height:58mm; display:grid; align-content:end; gap:7mm; }
+      .contract-page:not(.is-last) .contract-signatures { display:none; }
+      .signature-row { display:grid; grid-template-columns:30mm 1fr 22mm; align-items:end; gap:3mm; }
+      .signature-label { font-size:13pt; }
+      .signature-line { height:10mm; border-bottom:.3mm solid #222; }
+      .signature-seal { width:18mm; height:18mm; border:.3mm solid #222; }
+      .contract-date { margin-top:4mm; display:flex; justify-content:space-between; font-size:13pt; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><h1>廠房特約事項網頁demo</h1><span>林宜慶地政士事務所</span></div>
+    <div class="header-actions">
+      <button class="btn secondary" id="loadSampleBtn" type="button">載入範例</button>
+      <button class="btn secondary" id="resetBtn" type="button">恢復初始</button>
+      <button class="btn" id="copyBtn" type="button">複製特約</button>
+      <button class="btn" id="downloadBtn" type="button">匯出 PDF</button>
+    </div>
+  </header>
+  <div class="layout">
+    <aside>
+      <nav class="side-tabs" aria-label="左側功能">
+        <button class="side-tab active" type="button" data-panel="pdf">PDF 資料</button>
+        <button class="side-tab" type="button" data-panel="ai">AI 聊天室</button>
+      </nav>
+      <section class="side-panel" data-panel-content="pdf">
+        <div class="section">
+          <h2 class="section-title">PDF 資料</h2>
+          <div class="fields">
+            <label class="field">契約書編號<input type="text" data-case="contractNo" placeholder="例如：11506012345" /></label>
+            <label class="field">契約日期<input type="text" data-case="contractDate" placeholder="例如：115年6月10日" /></label>
+          </div>
+        </div>
+      </section>
+      <section class="side-panel" data-panel-content="ai" hidden>
+        <div class="section">
+          <h2 class="section-title">AI 聊天室</h2>
+          <div class="chat-log" id="chatLog"><div class="chat-message system">AI 功能尚未連接。未來將可參考目前問答與特約草稿回答合約問題。</div></div>
+          <div class="chat-compose"><textarea id="chatInput" placeholder="輸入合約問題" disabled></textarea><button class="btn" type="button" id="chatSendBtn" disabled>傳送</button></div>
+        </div>
+      </section>
+    </aside>
+    <main>
+      <section class="section"><h2 class="section-title">廠房題庫</h2></section>
+      <div class="question-list" id="questionList"></div>
+    </main>
+    <section class="result-panel">
+      <div class="output-block">
+        <div class="output-title"><span>特約事項草稿</span><div class="topic-actions"><span class="tag" id="clauseCount">3 條</span><button class="btn secondary small" id="addClauseBtn" type="button">新增條文</button></div></div>
+        <div class="output-body" id="clauseOutput"></div>
+      </div>
+      <div class="output-block"><div class="output-title">高風險提醒 <span class="tag" id="riskCount">0 項</span></div><div class="output-body" id="riskOutput"></div></div>
+      <div class="output-block"><div class="output-title">待補資料 <span class="tag" id="missingCount">0 項</span></div><div class="output-body" id="missingOutput"></div></div>
+    </section>
+  </div>
+  <div class="print-area" id="printArea"></div><div class="toast" id="toast"></div>
+  <script>
+    const FIXED_CLAUSES = [
+      { id:"fixed-1", text:"買方於完稅款時，應依地政士通知，將辦理產權移轉所需之相關稅費、規費及代辦費匯入指定銀行帳戶。" },
+      { id:"fixed-2", text:"雙方同意於辦理產權登記時，授權地政士依報稅日期訂立物權契約日期。" },
+      { id:"fixed-3", text:"雙方合意以「林宜慶地政士事務所」為本約騎縫章。" }
+    ];
+    const f = (key,label,type="text",options=[],wide=false,placeholder="") => ({key,label,type,options,wide,placeholder});
+    const questions = [
+  {
+    "id": "Q02",
+    "title": "原工廠登記註銷",
+    "risk": "高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "原工廠登記註銷",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "原工廠登記名義",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "登記內容",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "辦理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value5",
+            "label": "辦理事項",
+            "type": "select",
+            "options": [
+              "註銷",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "證明文件",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "買方新登記辦理方式",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的目前有以{value1}名義辦理之工廠登記，登記內容為{value2}。雙方約定由{value3}於民國{value4}前完成原工廠登記之{value5}程序，並提供{value6}證明文件；買方後續如需辦理新工廠登記，由{value7}依雙方約定辦理。"
+      }
+    ]
+  },
+  {
+    "id": "Q03",
+    "title": "增建／未保存廠房、稅籍與滲漏水",
+    "risk": "最高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "增建／未保存廠房、稅籍與滲漏水",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "增建位置",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "範圍或面積",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "房屋稅籍資料",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "瑕疵位置",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "具體屋況",
+            "type": "select",
+            "options": [
+              "滲漏水",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "增建部分處理方式",
+            "type": "select",
+            "options": [
+              "隨同交付",
+              "由賣方拆除",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "資料辦理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "稅籍、水電及資料處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value9",
+            "label": "屋況處理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value10",
+            "label": "屋況完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value11",
+            "label": "屋況處理方式",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value12",
+            "label": "費用及後續責任",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的廠房於{value1}有增建未辦保存登記部分，範圍／面積約{value2}，房屋稅籍資料為{value3}。買方已知悉前述建物之登記狀態，並知悉{value4}位置有{value5}之具體情形。雙方約定該部分{value6}，由{value7}配合辦理稅籍、水電及相關資料之{value8}；屋況由{value9}於{value10}前依{value11}方式處理，費用及後續責任為{value12}。"
+      }
+    ]
+  },
+  {
+    "id": "Q04",
+    "title": "污染列管、檢測及改善",
+    "risk": "最高",
+    "exclusive": true,
+    "topics": [
+      {
+        "id": "listed",
+        "label": "已列管：檢測、改善及解除列管",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "污染列管類型",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "主管機關及列管資料",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "已知污染項目",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value5",
+            "label": "應完成事項",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "應提出文件",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "未完成時處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的目前為{value1}污染列管案件，主管機關及列管資料為{value2}，已知污染項目為{value3}。雙方約定由賣方負責辦理後續污染檢測、改善及解除列管程序，相關檢測、改善及解除列管所生費用由賣方負擔，並應於民國{value4}前完成{value5}，提出{value6}文件；如未於期限內完成，依{value7}方式處理。"
+      },
+      {
+        "id": "positive",
+        "label": "Q04-1 無列管但檢出污染",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "檢測委託人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "檢測單位",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "檢測範圍",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "改善期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value5",
+            "label": "改善內容",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "複驗方式",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "未改善時契約處理",
+            "type": "select",
+            "options": [
+              "解除本契約",
+              "另行協議",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "已付價款及費用處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的目前無已知污染列管情形，雙方同意於交易前由{value1}委託{value2}辦理{value3}範圍之污染檢測。若檢測發現污染，由賣方負責於民國{value4}前完成{value5}改善，並以{value6}方式複驗確認；如賣方於期限內仍無法達成雙方約定之改善條件，雙方同意{value7}，已付價款及相關費用依{value8}辦理。"
+      },
+      {
+        "id": "negative",
+        "label": "Q04-2 無列管且檢測無污染",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "檢測單位",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "檢測完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value3",
+            "label": "檢測範圍",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "檢測費（元）",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "檢測報告提供人",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的目前無已知污染列管情形，買方因本件交易需要要求由{value1}於{value2}前辦理{value3}污染檢測。雙方約定，如檢測結果未發現雙方約定檢測範圍內之污染，該次檢測費新臺幣{value4}元由買方負擔；檢測報告由{value5}提供雙方留存。"
+      }
+    ]
+  },
+  {
+    "id": "Q05",
+    "title": "屋況瑕疵：滲漏水、壁癌、龜裂及爆磚",
+    "risk": "高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "屋況瑕疵：滲漏水、壁癌、龜裂及爆磚",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "瑕疵位置",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "具體瑕疵",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "發生條件、範圍及程度",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "處理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value6",
+            "label": "修繕或處理方式",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "費用負擔人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "原施工廠商保固內容及期間",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value9",
+            "label": "其他後續責任",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的廠房{value1}位置目前有{value2}情形，其發生條件、範圍及程度為{value3}，買方已於簽約前知悉前述具體內容。雙方約定由{value4}於民國{value5}前，以{value6}方式完成修繕／處理，相關費用由{value7}負擔；如有原施工廠商保固，其內容及期間為{value8}，其他後續責任依{value9}辦理。"
+      }
+    ]
+  },
+  {
+    "id": "Q06",
+    "title": "動力電、用電容量、移轉及費用",
+    "risk": "高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "動力電、用電容量、移轉及費用",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "契約容量",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "電號",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "動力電或變壓器設備",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "所有及使用情形",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "辦理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "戶名及容量處理",
+            "type": "select",
+            "options": [
+              "移轉",
+              "變更",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "交屋前欠費負擔人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "交屋後增容或變更費用",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的目前電力契約容量為{value1}，電號為{value2}，並設有{value3}動力電／變壓器等設備，其所有及使用情形為{value4}。雙方約定於交屋時由{value5}配合辦理電力戶名及契約容量之{value6}；交屋前既有欠費由{value7}負擔，交屋後因買方營運需要所生之增容／變更費用依{value8}辦理。"
+      }
+    ]
+  },
+  {
+    "id": "Q07",
+    "title": "機器設備、天車及附屬設備",
+    "risk": "高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "機器設備、天車及附屬設備",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "包含於買賣價金的設備",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "另行計價的設備",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "不屬買賣範圍的設備",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "搬離期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          }
+        ],
+        "template": "本件買賣所包含之機器設備、天車及附屬設備，以雙方簽認之附件設備清冊為準；其中{value1}包含於本件買賣價金，{value2}另行計價，{value3}不屬本件買賣範圍，由賣方於民國{value4}前搬離。設備之位置、數量、現況、功能確認及點交方式依清冊記載辦理。"
+      }
+    ]
+  },
+  {
+    "id": "Q08",
+    "title": "污水處理槽及其他不易處理設施",
+    "risk": "最高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "污水處理槽及其他不易處理設施",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "設施位置",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "設施類型",
+            "type": "select",
+            "options": [
+              "污水處理槽",
+              "地下槽體",
+              "特殊管線",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "用途、內容物及現況",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "處理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value6",
+            "label": "處理方式",
+            "type": "select",
+            "options": [
+              "保留點交",
+              "清理",
+              "拆除",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "費用負擔人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "完成情形確認方式",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的廠區目前於{value1}設有{value2}，其用途、內容物及具體狀況為{value3}。買方已知悉前述設施，雙方約定由{value4}於民國{value5}前完成{value6}，費用由{value7}負擔，完成情形以{value8}確認。"
+      }
+    ]
+  },
+  {
+    "id": "Q09",
+    "title": "污水處理費用",
+    "risk": "高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "污水處理費用",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "收費單位、費率及計費方式",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "結算基準",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "結算前費用及欠費負擔人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "結算後費用負擔人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "保證金或預繳款（元）",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "保證金移交或結算方式",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的污水處理費用之收費單位、費率及計費方式為{value1}。雙方約定以{value2}為結算基準，在此之前所生費用及既存欠費由{value3}負擔，其後費用由{value4}負擔；已繳保證金或預繳款新臺幣{value5}元依{value6}方式移交／結算。"
+      }
+    ]
+  },
+  {
+    "id": "Q10",
+    "title": "太陽能設備：自設或出租",
+    "risk": "高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "太陽能設備：自設或出租",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "太陽能設置位置",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "設備所有人",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "契約相對人",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "契約期間",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "租金或收益",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "交屋設備及契約處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "拆除復原人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "拆除復原期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value9",
+            "label": "收益、費用及其他權利義務",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的目前於{value1}設置太陽能設備，設備所有人為{value2}，契約相對人為{value3}，契約期間至{value4}，租金／收益為{value5}。買方已知悉前述具體情形，雙方約定交屋時設備及契約依{value6}方式處理；如需拆除及復原，由{value7}於{value8}前完成，收益、費用及其他權利義務依{value9}辦理。"
+      }
+    ]
+  },
+  {
+    "id": "Q12",
+    "title": "售後回租",
+    "risk": "高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "售後回租",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "回租範圍（全部或具體部分）",
+            "type": "select",
+            "options": [
+              "全部",
+              "部分"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "租期起日",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value3",
+            "label": "租期迄日",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value4",
+            "label": "每月租金（元）",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "押租金（元）",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "租期費用、維護及返還點交",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "雙方同意於本件買賣完成後，由買方將本標的{value1}出租予賣方繼續使用，租期自民國{value2}起至民國{value3}止，每月租金新臺幣{value4}元，押租金新臺幣{value5}元。租賃期間之水電、稅費、管理費、修繕維護及返還點交依{value6}辦理；雙方應另行簽訂租賃契約，其餘權利義務依該租約約定。"
+      }
+    ]
+  },
+  {
+    "id": "Q14",
+    "title": "貸款條件及解約但書",
+    "risk": "高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "貸款條件及解約但書",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "金融機構",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "約定貸款條件",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "申請期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value4",
+            "label": "核貸認定文件及時間",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "未達條件時處理",
+            "type": "select",
+            "options": [
+              "解除本契約",
+              "另行協議",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "已付款項及費用處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "買方預計以本標的向{value1}申請融資／貸款，並以{value2}作為雙方約定之貸款條件。買方應於{value3}前提出申請並配合金融機構提供相關資料；實際核貸結果以{value4}文件及時間為認定基準。如未達前述條件，雙方同意依{value5}方式處理，已付價款及相關費用依{value6}辦理。"
+      }
+    ]
+  },
+  {
+    "id": "Q15",
+    "title": "預告登記、抵押、信託及其他產權限制",
+    "risk": "最高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "預告登記、抵押、信託及其他產權限制",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "產權限制",
+            "type": "select",
+            "options": [
+              "預告登記",
+              "預告登記及抵押權",
+              "私人抵押權",
+              "信託",
+              "假扣押",
+              "假處分",
+              "訴訟繫屬註記",
+              "國宅貸款",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "權利人或相關人",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "登記、案號及金額",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "處理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value6",
+            "label": "應完成處理",
+            "type": "select",
+            "options": [
+              "清償",
+              "塗銷",
+              "終止信託",
+              "取得同意",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "應備文件",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "未完成時處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本標的目前有{value1}，權利人或相關人為{value2}，登記、案號及金額等內容為{value3}。雙方約定由{value4}於{value5}前完成{value6}處理，並備妥{value7}文件；未完成時依{value8}處理。"
+      }
+    ]
+  },
+  {
+    "id": "Q16",
+    "title": "來源待補－暫不啟用",
+    "disabled": true,
+    "risk": "一般",
+    "topics": []
+  },
+  {
+    "id": "Q17",
+    "title": "法人／組織處分程序",
+    "risk": "最高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "法人／組織處分程序",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "法人一方",
+            "type": "select",
+            "options": [
+              "買方",
+              "賣方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "法人或組織名稱",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "法人或組織類型",
+            "type": "select",
+            "options": [
+              "公司",
+              "私法人",
+              "財團法人",
+              "寺廟法人",
+              "社團法人",
+              "祭祀公業",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "代表人",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "簽約人及身分",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "買受或處分",
+            "type": "select",
+            "options": [
+              "買受",
+              "處分"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "必要程序",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "程序現況",
+            "type": "select",
+            "options": [
+              "已完成",
+              "尚未完成"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value9",
+            "label": "辦理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value10",
+            "label": "完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value11",
+            "label": "應提出文件",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value12",
+            "label": "未完成時處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "本件{value1}{value2}為{value3}，代表人為{value4}，簽約人及身分為{value5}。簽約時，本件不動產{value6}所需之{value7}程序目前{value8}。雙方約定由{value9}於民國{value10}前完成相關程序並提出{value11}文件；未於期限內完成時，依{value12}方式處理。本題僅記載待確認程序，不自行判定各類組織依法必須完成之程序。"
+      }
+    ]
+  },
+  {
+    "id": "Q18",
+    "title": "營業稅、發票及公司稅務",
+    "risk": "最高",
+    "topics": [
+      {
+        "id": "details",
+        "label": "營業稅、發票及公司稅務",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "買賣總價（元）",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "土地、建物、設備及其他價款分列",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "營業稅負擔及價款含稅約定",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "發票或憑證開立人",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "開立時間",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value6",
+            "label": "受票人",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "公司稅務確認人",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "稅務確認期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          }
+        ],
+        "template": "本件買賣總價款為新臺幣{value1}元，土地、建物、機器設備及其他項目價款分別為{value2}。本件營業稅之負擔及價款是否含稅，雙方約定為{value3}；發票／憑證由{value4}於{value5}依雙方確認之金額及項目開立予{value6}。其他公司稅務事項由{value7}於{value8}前另行確認，本題不自行計算或認定稅負。"
+      }
+    ]
+  },
+  {
+    "id": "Q19",
+    "title": "產業用地（一）／（二）出售條件",
+    "risk": "最高",
+    "exclusive": true,
+    "topics": [
+      {
+        "id": "industrialOne",
+        "label": "產業用地（一）",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "園區或工業區名稱",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "土地及廠房位置",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "用地類別確認依據",
+            "type": "select",
+            "options": [
+              "土地登記謄本",
+              "園區配置圖",
+              "主管機關文件",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value5",
+            "label": "產一文件提供期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value6",
+            "label": "產一查核文件",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value7",
+            "label": "產一應完成項目",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value8",
+            "label": "產一證明文件",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value10",
+            "label": "查詢辦理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value11",
+            "label": "查詢完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value12",
+            "label": "查詢機關或管理機構",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value13",
+            "label": "查詢或申請事項",
+            "type": "select",
+            "options": [
+              "查詢",
+              "文件申請",
+              "核准",
+              "備查",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value14",
+            "label": "補正人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value15",
+            "label": "補正期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value16",
+            "label": "補正內容",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value17",
+            "label": "補正費用負擔人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value18",
+            "label": "未完成或未核准時處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "一、本標的坐落{value1}，土地及廠房位置為{value2}，經雙方依{value3}確認其用地類別為產業用地（一）。\n二、如屬產業用地（一），賣方應於民國{value5}前提出{value6}供買方查核，並確認買方產業類別、廠房興建完成期限、使用執照、工廠登記或依法免辦之依據、限制移轉起算日與年限，以及主管機關核准或備查程序。應完成項目為{value7}，其證明文件為{value8}。\n四、本件由{value10}負責於民國{value11}前向{value12}完成{value13}，並將書面結果交付他方。\n五、查證結果如顯示本件已符合全部出售及移轉條件，雙方依原定期程辦理；如尚有可補正事項，應由{value14}於民國{value15}前完成{value16}，費用由{value17}負擔。屆期仍未完成或主管機關不予核准時，雙方同意{value18}。\n六、本條所載事項係依個案文件查核結果履行，不得解讀為僅憑本條即已認定本件依法可以出售、不得出售，或已當然取得主管機關核准。"
+      },
+      {
+        "id": "industrialTwo",
+        "label": "產業用地（二）",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "園區或工業區名稱",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "土地及廠房位置",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "用地類別確認依據",
+            "type": "select",
+            "options": [
+              "土地登記謄本",
+              "園區配置圖",
+              "主管機關文件",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value9",
+            "label": "產二登記及許可事項",
+            "type": "select",
+            "options": [
+              "公司登記",
+              "商業登記",
+              "稅籍登記",
+              "目的事業主管機關許可",
+              "工廠登記",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value10",
+            "label": "查詢辦理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value11",
+            "label": "查詢完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value12",
+            "label": "查詢機關或管理機構",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value13",
+            "label": "查詢或申請事項",
+            "type": "select",
+            "options": [
+              "查詢",
+              "文件申請",
+              "核准",
+              "備查",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value14",
+            "label": "補正人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value15",
+            "label": "補正期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value16",
+            "label": "補正內容",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value17",
+            "label": "補正費用負擔人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value18",
+            "label": "未完成或未核准時處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "一、本標的坐落{value1}，土地及廠房位置為{value2}，經雙方依{value3}確認其用地類別為產業用地（二）。\n三、如屬產業用地（二），雙方應依園區核定之支援產業類別及買方預定實際使用，確認買方資格與應辦之{value9}。產二如因實際使用依法應辦工廠登記，仍應完成；如個案出售手冊、原始契約或主管機關文件另定興建、開始營運、持有年限、移轉核准或其他限制，亦應從其約定，不得逕以產一條件替代，亦不得推定產二當然無限制。\n四、本件由{value10}負責於民國{value11}前向{value12}完成{value13}，並將書面結果交付他方。\n五、查證結果如顯示本件已符合全部出售及移轉條件，雙方依原定期程辦理；如尚有可補正事項，應由{value14}於民國{value15}前完成{value16}，費用由{value17}負擔。屆期仍未完成或主管機關不予核准時，雙方同意{value18}。\n六、本條所載事項係依個案文件查核結果履行，不得解讀為僅憑本條即已認定本件依法可以出售、不得出售，或已當然取得主管機關核准。"
+      },
+      {
+        "id": "otherLand",
+        "label": "其他用地類別",
+        "fields": [
+          {
+            "key": "value1",
+            "label": "園區或工業區名稱",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value2",
+            "label": "土地及廠房位置",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value3",
+            "label": "用地類別確認依據",
+            "type": "select",
+            "options": [
+              "土地登記謄本",
+              "園區配置圖",
+              "主管機關文件",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value4",
+            "label": "用地類別",
+            "type": "select",
+            "options": [
+              "產業用地（一）",
+              "產業用地（二）",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value10",
+            "label": "查詢辦理人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value11",
+            "label": "查詢完成期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value12",
+            "label": "查詢機關或管理機構",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value13",
+            "label": "查詢或申請事項",
+            "type": "select",
+            "options": [
+              "查詢",
+              "文件申請",
+              "核准",
+              "備查",
+              "其他"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value14",
+            "label": "補正人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value15",
+            "label": "補正期限",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": "例如：115年12月31日"
+          },
+          {
+            "key": "value16",
+            "label": "補正內容",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          },
+          {
+            "key": "value17",
+            "label": "補正費用負擔人",
+            "type": "select",
+            "options": [
+              "賣方",
+              "買方",
+              "雙方"
+            ],
+            "wide": false,
+            "placeholder": ""
+          },
+          {
+            "key": "value18",
+            "label": "未完成或未核准時處理",
+            "type": "text",
+            "options": [],
+            "wide": true,
+            "placeholder": ""
+          }
+        ],
+        "template": "一、本標的坐落{value1}，土地及廠房位置為{value2}，經雙方依{value3}確認其用地類別為{value4}。\n四、本件由{value10}負責於民國{value11}前向{value12}完成{value13}，並將書面結果交付他方。\n五、查證結果如顯示本件已符合全部出售及移轉條件，雙方依原定期程辦理；如尚有可補正事項，應由{value14}於民國{value15}前完成{value16}，費用由{value17}負擔。屆期仍未完成或主管機關不予核准時，雙方同意{value18}。\n六、本條所載事項係依個案文件查核結果履行，不得解讀為僅憑本條即已認定本件依法可以出售、不得出售，或已當然取得主管機關核准。"
+      }
+    ]
+  }
+];
+    const DATE_FIELDS = {
+  "Q02.details": [
+    "value4"
+  ],
+  "Q03.details": [
+    "value10"
+  ],
+  "Q04.listed": [
+    "value4"
+  ],
+  "Q04.positive": [
+    "value4"
+  ],
+  "Q04.negative": [
+    "value2"
+  ],
+  "Q05.details": [
+    "value5"
+  ],
+  "Q07.details": [
+    "value4"
+  ],
+  "Q08.details": [
+    "value5"
+  ],
+  "Q10.details": [
+    "value4",
+    "value8"
+  ],
+  "Q12.details": [
+    "value2",
+    "value3"
+  ],
+  "Q14.details": [
+    "value3"
+  ],
+  "Q15.details": [
+    "value5"
+  ],
+  "Q17.details": [
+    "value10"
+  ],
+  "Q18.details": [
+    "value5",
+    "value8"
+  ],
+  "Q19.industrialOne": [
+    "value5",
+    "value11",
+    "value15"
+  ],
+  "Q19.industrialTwo": [
+    "value11",
+    "value15"
+  ],
+  "Q19.otherLand": [
+    "value11",
+    "value15"
+  ]
+};
+    questions.forEach(question=>question.topics.forEach(topic=>topic.fields.forEach(field=>{if((DATE_FIELDS[`${question.id}.${topic.id}`] || []).includes(field.key)){field.type="date";field.placeholder="";}})));
+
+    questions.find(q=>q.id==="Q10").topics[0].fields.find(field=>field.key==="value4").label="太陽能契約到期日";
+    const loanTopic=questions.find(q=>q.id==="Q14").topics[0];
+    loanTopic.fields.splice(loanTopic.fields.findIndex(field=>field.key==="value4"),0,f("recognitionDate","核貸認定日期","date"));
+    loanTopic.fields.find(field=>field.key==="value4").label="核貸認定文件";
+    loanTopic.template=loanTopic.template.replace("{value4}","日期{recognitionDate}及文件{value4}");
+
+    const BRIEF_SPECS={
+  "Q02.details": {
+    "group": false,
+    "label": "原工廠登記註銷",
+    "briefTemplate": "本標的原工廠登記由{slot1}於{slot2}前完成{slot3}並提供相關證明。",
+    "briefBindings": {
+      "slot1": "value3",
+      "slot2": "value4",
+      "slot3": "value5"
+    },
+    "briefFields": [],
+    "briefSource": "本標的原工廠登記由【＿＿方】於【＿＿＿＿】前完成【註銷／其他＿＿＿＿】並提供相關證明。",
+    "briefSourceParagraphs": [
+      56
+    ]
+  },
+  "Q03.details": {
+    "group": false,
+    "label": "增建／未保存廠房、稅籍與滲漏水",
+    "briefTemplate": "本標的{slot1}有增建未保存建物，稅籍及具體屋況為{slot2}，雙方約定依{slot3}方式處理。",
+    "briefBindings": {
+      "slot1": "value1",
+      "slot2": {
+        "extra": "brief2"
+      },
+      "slot3": {
+        "extra": "brief3"
+      }
+    },
+    "briefFields": [
+      {
+        "key": "brief2",
+        "label": "精要版－稅籍及具體屋況",
+        "type": "textarea",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "value3",
+            "value4",
+            "value5"
+          ],
+          "labels": [
+            "房屋稅籍",
+            "瑕疵位置",
+            "具體屋況"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      },
+      {
+        "key": "brief3",
+        "label": "精要版－增建及屋況處理方式",
+        "type": "textarea",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "value6",
+            "value11",
+            "value12"
+          ],
+          "labels": [
+            "增建處理",
+            "屋況處理",
+            "費用與責任"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "本標的【＿＿＿＿】有增建未保存建物，稅籍及具體屋況為【＿＿＿＿】，雙方約定依【＿＿＿＿】方式處理。",
+    "briefSourceParagraphs": [
+      64
+    ]
+  },
+  "Q04.listed": {
+    "group": false,
+    "label": "已列管：檢測、改善及解除列管",
+    "briefTemplate": "本標的污染列管之檢測、改善及解除列管由賣方於{slot1}前辦理並負擔相關費用。",
+    "briefBindings": {
+      "slot1": "value4"
+    },
+    "briefFields": [],
+    "briefSource": "本標的污染列管之檢測、改善及解除列管由賣方於【＿＿＿＿】前辦理並負擔相關費用。",
+    "briefSourceParagraphs": [
+      72
+    ]
+  },
+  "Q04.positive": {
+    "group": false,
+    "label": "Q04-1 無列管但檢出污染",
+    "briefTemplate": "交易前檢出污染時由賣方於{slot1}前改善；無法達成約定改善條件時，契約及已付價款依{slot2}處理。",
+    "briefBindings": {
+      "slot1": "value4",
+      "slot2": {
+        "extra": "brief2"
+      }
+    },
+    "briefFields": [
+      {
+        "key": "brief2",
+        "label": "精要版－無法改善時契約及款項處理",
+        "type": "textarea",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "value7",
+            "value8"
+          ],
+          "labels": [
+            "契約處理",
+            "款項及費用"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "交易前檢出污染時由賣方於【＿＿＿＿】前改善；無法達成約定改善條件時，契約及已付價款依【＿＿＿＿】處理。",
+    "briefSourceParagraphs": [
+      80
+    ]
+  },
+  "Q04.negative": {
+    "group": false,
+    "label": "Q04-2 無列管且檢測無污染",
+    "briefTemplate": "本標的如經檢測未發現約定範圍之污染，相關檢測費由買方負擔。",
+    "briefBindings": {},
+    "briefFields": [],
+    "briefSource": "本標的如經檢測未發現約定範圍之污染，相關檢測費由買方負擔。",
+    "briefSourceParagraphs": [
+      88
+    ]
+  },
+  "Q05.details": {
+    "group": false,
+    "label": "屋況瑕疵：滲漏水、壁癌、龜裂及爆磚",
+    "briefTemplate": "本標的廠房{slot1}有{slot2}情形，由{slot3}於{slot4}前依{slot5}方式處理，後續責任為{slot6}。",
+    "briefBindings": {
+      "slot1": "value1",
+      "slot2": "value2",
+      "slot3": "value4",
+      "slot4": "value5",
+      "slot5": "value6",
+      "slot6": "value9"
+    },
+    "briefFields": [],
+    "briefSource": "本標的廠房【＿＿＿＿】有【＿＿＿＿】情形，由【＿＿方】於【＿＿＿＿】前依【＿＿＿＿】方式處理，後續責任為【＿＿＿＿】。",
+    "briefSourceParagraphs": [
+      96
+    ]
+  },
+  "Q06.details": {
+    "group": false,
+    "label": "動力電、用電容量、移轉及費用",
+    "briefTemplate": "本標的電力契約容量為{slot1}，動力電設備{slot2}隨同交付；戶名、容量及費用依{slot3}辦理。",
+    "briefBindings": {
+      "slot1": "value1",
+      "slot2": "value3",
+      "slot3": {
+        "extra": "brief3"
+      }
+    },
+    "briefFields": [
+      {
+        "key": "brief3",
+        "label": "精要版－戶名、容量及費用處理",
+        "type": "textarea",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "value6",
+            "value7",
+            "value8"
+          ],
+          "labels": [
+            "戶名及容量",
+            "交屋前欠費",
+            "增容或變更費用"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "本標的電力契約容量為【＿＿＿＿】，動力電設備【＿＿＿＿】隨同交付；戶名、容量及費用依【＿＿＿＿】辦理。",
+    "briefSourceParagraphs": [
+      104
+    ]
+  },
+  "Q07.details": {
+    "group": false,
+    "label": "機器設備、天車及附屬設備",
+    "briefTemplate": "機器設備、天車及附屬設備之交付範圍以雙方簽認之設備清冊為準；未列入者由{slot1}於{slot2}前搬離。",
+    "briefBindings": {
+      "slot1": {
+        "literal": "賣方"
+      },
+      "slot2": "value4"
+    },
+    "briefFields": [],
+    "briefSource": "機器設備、天車及附屬設備之交付範圍以雙方簽認之設備清冊為準；未列入者由【＿＿方】於【＿＿＿＿】前搬離。",
+    "briefSourceParagraphs": [
+      112
+    ]
+  },
+  "Q08.details": {
+    "group": false,
+    "label": "污水處理槽及其他不易處理設施",
+    "briefTemplate": "本標的現有{slot1}設施，由{slot2}於{slot3}前依{slot4}方式處理。",
+    "briefBindings": {
+      "slot1": "value2",
+      "slot2": "value4",
+      "slot3": "value5",
+      "slot4": "value6"
+    },
+    "briefFields": [],
+    "briefSource": "本標的現有【＿＿＿＿】設施，由【＿＿方】於【＿＿＿＿】前依【＿＿＿＿】方式處理。",
+    "briefSourceParagraphs": [
+      120
+    ]
+  },
+  "Q09.details": {
+    "group": false,
+    "label": "污水處理費用",
+    "briefTemplate": "污水處理費以{slot1}為結算基準，此前由{slot2}負擔，其後由{slot3}負擔。",
+    "briefBindings": {
+      "slot1": "value2",
+      "slot2": "value3",
+      "slot3": "value4"
+    },
+    "briefFields": [],
+    "briefSource": "污水處理費以【＿＿＿＿】為結算基準，此前由【＿＿方】負擔，其後由【＿＿方】負擔。",
+    "briefSourceParagraphs": [
+      128
+    ]
+  },
+  "Q10.details": {
+    "group": false,
+    "label": "太陽能設備：自設或出租",
+    "briefTemplate": "太陽能設備屬{slot1}所有，相關契約、收益及交屋處理依{slot2}辦理。",
+    "briefBindings": {
+      "slot1": "value2",
+      "slot2": {
+        "extra": "brief2"
+      }
+    },
+    "briefFields": [
+      {
+        "key": "brief2",
+        "label": "精要版－契約、收益及交屋處理",
+        "type": "textarea",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "value6",
+            "value5",
+            "value9"
+          ],
+          "labels": [
+            "契約及交屋",
+            "租金或收益",
+            "其他權利義務"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "太陽能設備屬【＿＿＿＿】所有，相關契約、收益及交屋處理依【＿＿＿＿】辦理。",
+    "briefSourceParagraphs": [
+      136
+    ]
+  },
+  "Q12.details": {
+    "group": false,
+    "label": "售後回租",
+    "briefTemplate": "交屋後由買方將{slot1}回租予賣方，租期、租金、押租金及費用依雙方另訂租約辦理。",
+    "briefBindings": {
+      "slot1": "value1"
+    },
+    "briefFields": [],
+    "briefSource": "交屋後由買方將【＿＿＿＿】回租予賣方，租期、租金、押租金及費用依雙方另訂租約辦理。",
+    "briefSourceParagraphs": [
+      144
+    ]
+  },
+  "Q14.details": {
+    "group": false,
+    "label": "貸款條件及解約但書",
+    "briefTemplate": "本件貸款條件為{slot1}，未達條件時，契約、已付價款及費用依{slot2}處理。",
+    "briefBindings": {
+      "slot1": "value2",
+      "slot2": {
+        "extra": "brief2"
+      }
+    },
+    "briefFields": [
+      {
+        "key": "brief2",
+        "label": "精要版－契約、已付價款及費用處理",
+        "type": "textarea",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "value5",
+            "value6"
+          ],
+          "labels": [
+            "契約處理",
+            "款項及費用"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "本件貸款條件為【＿＿＿＿】，未達條件時，契約、已付價款及費用依【＿＿＿＿】處理。",
+    "briefSourceParagraphs": [
+      152
+    ]
+  },
+  "Q15.details": {
+    "group": false,
+    "label": "預告登記、抵押、信託及其他產權限制",
+    "briefTemplate": "本標的有{slot1}權利限制，由{slot2}於{slot3}前完成{slot4}並提供證明後辦理移轉。",
+    "briefBindings": {
+      "slot1": "value1",
+      "slot2": "value4",
+      "slot3": "value5",
+      "slot4": "value6"
+    },
+    "briefFields": [],
+    "briefSource": "本標的有【＿＿＿＿】權利限制，由【＿＿方】於【＿＿＿＿】前完成【＿＿＿＿】並提供證明後辦理移轉。",
+    "briefSourceParagraphs": [
+      160
+    ]
+  },
+  "Q17.details": {
+    "group": false,
+    "label": "法人／組織處分程序",
+    "briefTemplate": "本件{slot1}為{slot2}法人／組織，應由{slot3}於{slot4}前完成{slot5}程序並提供相關文件。",
+    "briefBindings": {
+      "slot1": "value1",
+      "slot2": "value2",
+      "slot3": "value9",
+      "slot4": "value10",
+      "slot5": "value7"
+    },
+    "briefFields": [],
+    "briefSource": "本件【買方／賣方】為【＿＿＿＿】法人／組織，應由【＿＿方】於【＿＿＿＿】前完成【＿＿＿＿】程序並提供相關文件。",
+    "briefSourceParagraphs": [
+      177
+    ]
+  },
+  "Q18.details": {
+    "group": false,
+    "label": "營業稅、發票及公司稅務",
+    "briefTemplate": "土地、建物及設備價款分列為{slot1}，營業稅及發票開立依{slot2}辦理。",
+    "briefBindings": {
+      "slot1": "value2",
+      "slot2": {
+        "extra": "brief2"
+      }
+    },
+    "briefFields": [
+      {
+        "key": "brief2",
+        "label": "精要版－營業稅及發票開立約定",
+        "type": "textarea",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "value3",
+            "value4",
+            "value5",
+            "value6"
+          ],
+          "labels": [
+            "營業稅",
+            "開立人",
+            "開立時間",
+            "受票人"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "土地、建物及設備價款分列為【＿＿＿＿】，營業稅及發票開立依【＿＿＿＿】辦理。",
+    "briefSourceParagraphs": [
+      185
+    ]
+  },
+  "Q19.industrialOne": {
+    "group": false,
+    "label": "產業用地（一）",
+    "briefTemplate": "本標的用地類別為{slot1}。產一由{slot2}於{slot3}前完成{slot4}查核。個案出售條件依園區手冊、原始契約及主管機關文件辦理；未完成時依{slot5}處理。",
+    "briefBindings": {
+      "slot1": {
+        "literal": "產一"
+      },
+      "slot2": "value10",
+      "slot3": "value11",
+      "slot4": "value7",
+      "slot5": "value18"
+    },
+    "briefFields": [],
+    "briefSource": "本標的用地類別為【產一／產二／其他＿＿＿＿】。產一由【＿＿方】於【＿＿＿＿】前完成【興建／使用執照／工廠登記或免辦／移轉年限／核准或備查】查核；產二依支援產業類別及實際使用確認【公司、商業、稅籍、目的事業許可或工廠登記】。個案出售條件依園區手冊、原始契約及主管機關文件辦理；未完成時依【＿＿＿＿】處理。",
+    "briefSourceParagraphs": [
+      199
+    ]
+  },
+  "Q19.industrialTwo": {
+    "group": false,
+    "label": "產業用地（二）",
+    "briefTemplate": "本標的用地類別為{slot1}。產二依支援產業類別及實際使用確認{slot2}。個案出售條件依園區手冊、原始契約及主管機關文件辦理；未完成時依{slot3}處理。",
+    "briefBindings": {
+      "slot1": {
+        "literal": "產二"
+      },
+      "slot2": "value9",
+      "slot3": "value18"
+    },
+    "briefFields": [],
+    "briefSource": "本標的用地類別為【產一／產二／其他＿＿＿＿】。產一由【＿＿方】於【＿＿＿＿】前完成【興建／使用執照／工廠登記或免辦／移轉年限／核准或備查】查核；產二依支援產業類別及實際使用確認【公司、商業、稅籍、目的事業許可或工廠登記】。個案出售條件依園區手冊、原始契約及主管機關文件辦理；未完成時依【＿＿＿＿】處理。",
+    "briefSourceParagraphs": [
+      199
+    ]
+  },
+  "Q19.otherLand": {
+    "group": false,
+    "label": "其他用地類別",
+    "briefTemplate": "本標的用地類別為{slot1}。個案出售條件依園區手冊、原始契約及主管機關文件辦理；未完成時依{slot2}處理。",
+    "briefBindings": {
+      "slot1": "value4",
+      "slot2": "value18"
+    },
+    "briefFields": [],
+    "briefSource": "本標的用地類別為【產一／產二／其他＿＿＿＿】。產一由【＿＿方】於【＿＿＿＿】前完成【興建／使用執照／工廠登記或免辦／移轉年限／核准或備查】查核；產二依支援產業類別及實際使用確認【公司、商業、稅籍、目的事業許可或工廠登記】。個案出售條件依園區手冊、原始契約及主管機關文件辦理；未完成時依【＿＿＿＿】處理。",
+    "briefSourceParagraphs": [
+      199
+    ]
+  }
+};
+    Object.entries(BRIEF_SPECS).forEach(([id,spec])=>{
+      const [questionId,topicId]=id.split("."),question=questions.find(q=>q.id===questionId);
+      if(spec.group) question.briefGroup={id:topicId,fields:[],...spec};
+      else Object.assign(question.topics.find(topic=>topic.id===topicId),spec);
+    });
+    const state = { selected:{}, values:{}, excluded:{}, drafts:{}, manual:[], order:[], versions:{}, comparing:{}, activePanel:"pdf" };
+    const $ = (id) => document.getElementById(id);
+    const esc = (value) => String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    const keyOf = (questionId,topicId,fieldKey) => `${questionId}.${topicId}.${fieldKey}`;
+    const topicKey = (questionId,topicId) => `${questionId}.${topicId}`;
+    const isSelected = (questionId,topicId) => Boolean(state.selected[topicKey(questionId,topicId)]);
+    function isoDate(value) {
+      const text=String(value || "").trim().replace(/^民國/,""),match=text.match(/^(\d{2,4})年(\d{1,2})月(\d{1,2})日(?:\s*(\d{1,2})[時:](\d{1,2})分?)?$/);
+      if(!match) return text;
+      const year=Number(match[1])<1912?Number(match[1])+1911:Number(match[1]);
+      const date=`${year}-${match[2].padStart(2,"0")}-${match[3].padStart(2,"0")}`;
+      return match[4]?`${date}T${match[4].padStart(2,"0")}:${match[5].padStart(2,"0")}`:date;
+    }
+    function rocDate(value) {
+      const match=String(value).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$/);
+      if(!match) return value;
+      const date=`${Number(match[1])-1911}年${Number(match[2])}月${Number(match[3])}日`;
+      return match[4]?`${date}${Number(match[4])}時${Number(match[5])}分`:date;
+    }
+    function fieldVisible(question,topic,field) {
+      const value=key=>state.values[keyOf(question.id,topic.id,key)] || "";
+      if(field.when && value(field.when.key)!==field.when.equals) return false;
+      if(field.dateAlternative && value(field.dateAlternative.control)===field.dateAlternative.equals) return false;
+      return true;
+    }
+    function fieldHtml(question,topic,field) {
+      if(!fieldVisible(question,topic,field)) return "";
+      const key=keyOf(question.id,topic.id,field.key), value=topic.briefFields?.includes(field)?briefFieldValue(question,topic,field):(state.values[key] || "");
+      const cls=field.wide ? "field wide" : "field";
+      if(field.type==="select") { const otherKey=keyOf(question.id,topic.id,`${field.key}Other`), otherValue=state.values[otherKey] || ""; return `<label class="${cls}">${esc(field.label)}<select data-value-key="${esc(key)}" data-other-select="${field.options.includes("其他")?"true":"false"}"><option value="">請選擇</option>${field.options.map(o=>`<option${o===value?" selected":""}>${esc(o)}</option>`).join("")}</select></label>${field.options.includes("其他")&&value==="其他"?`<label class="${cls}">${esc(field.label)}－其他說明<input type="text" data-value-key="${esc(otherKey)}" value="${esc(otherValue)}" placeholder="請填寫其他內容" /></label>`:""}`; }
+      if(field.type==="textarea") return `<label class="${cls}">${esc(field.label)}<textarea data-value-key="${esc(key)}" placeholder="${esc(field.placeholder)}">${esc(value)}</textarea></label>`;
+      return `<label class="${cls}">${esc(field.label)}<input type="${field.type}"${field.type==="date"?' min="1912-01-01"':field.type==="datetime-local"?' min="1912-01-01T00:00"':""} data-value-key="${esc(key)}" value="${esc(value)}" placeholder="${esc(field.placeholder)}" /></label>`;
+    }
+    function generatedFullTopic(question,topic) {
+      const missing=[];
+      const text=topic.template.replace(/\{(\w+)\}/g,(_,key)=>{
+        let actualKey=key,field=topic.fields.find(item=>item.key===key);
+        if(field?.dateAlternative && state.values[keyOf(question.id,topic.id,field.dateAlternative.control)]===field.dateAlternative.equals){actualKey=field.dateAlternative.key;field=topic.fields.find(item=>item.key===actualKey);}
+        let value=(state.values[keyOf(question.id,topic.id,actualKey)] || "").trim();
+        if(["date","datetime-local"].includes(field?.type) && value) value=rocDate(value);
+        if(field?.type==="select" && field.options.includes("其他") && value==="其他") { const otherValue=(state.values[keyOf(question.id,topic.id,`${key}Other`)] || "").trim(); if(!otherValue){ missing.push(`${question.id} ${topic.label}：${field.label}－其他說明`); return "【其他說明尚未填寫】"; } return otherValue; }
+        if(!value){ const label=field?.label || key; missing.push(`${question.id} ${topic.label}：${label}`); return `【${label}尚未填寫】`; }
+        return value;
+      });
+      return { text, missing };
+    }
+    function findVersionTopic(question,id) { return question.briefGroup?.id===id?question.briefGroup:question.topics.find(topic=>topic.id===id); }
+    function versionKey(question,topic) { return topicKey(question.id,question.briefGroup?.id||topic.id); }
+    function selectedVersion(question,topic) { return state.versions[versionKey(question,topic)]||"full"; }
+    function briefFieldValue(question,topic,field) {
+      const key=keyOf(question.id,topic.id,field.key);
+      if(Object.hasOwn(state.values,key)) return state.values[key];
+      if(!field.fallback) return "";
+      const missing=[],value=resolveBriefBinding(question,topic,field.fallback,missing);
+      if(missing.length || (field.type==="select"&&!field.options.includes(value))) return "";
+      return ["date","datetime-local"].includes(field.type)?isoDate(value):value;
+    }
+    function resolveBriefBinding(question,topic,binding,missing) {
+      if(typeof binding==="string") binding={field:binding};
+      if(Object.hasOwn(binding,"literal")) return binding.literal;
+      if(binding.refs) return binding.refs.map((ref,index)=>`${binding.labels?.[index]?binding.labels[index]+"：":""}${resolveBriefBinding(question,topic,ref,missing)}`).join("；");
+      if(binding.format) return binding.format.replace(/\{(\w+)\}/g,(_,key)=>resolveBriefBinding(question,topic,key,missing));
+      if(binding.extra){
+        const field=topic.briefFields.find(item=>item.key===binding.extra);
+        let value=String(briefFieldValue(question,topic,field)||"").trim();
+        if(field.type==="select"&&value==="其他") value=String(state.values[keyOf(question.id,topic.id,field.key+"Other")]||"").trim();
+        if(!value){missing.push(`${question.id} ${topic.label}：${field.label}`);return `【${field.label}尚未填寫】`;}
+        return ["date","datetime-local"].includes(field.type)?rocDate(value):value;
+      }
+      const [targetId,fieldKey]=binding.field.includes(".")?binding.field.split("."):[topic.id,binding.field];
+      const target=findVersionTopic(question,targetId);
+      if(!target) throw new Error(`精要版欄位對應不存在：${question.id}.${binding.field}`);
+      if(target!==topic&&!isSelected(question.id,target.id)){
+        const label=target.fields.find(field=>field.key===fieldKey)?.label||fieldKey;
+        missing.push(`${question.id} ${target.label}：${label}`);return `【${label}尚未填寫】`;
+      }
+      const raw=state.values[keyOf(question.id,target.id,fieldKey)];
+      if(binding.variants?.[raw]) return resolveBriefBinding(question,target,binding.variants[raw],missing);
+      const result=generatedFullTopic(question,{...target,template:`{${fieldKey}}`});
+      missing.push(...result.missing);
+      let value=result.text;
+      if(binding.replace?.[value]) value=binding.replace[value];
+      if(binding.suffix&&(!binding.dedupe||!value.endsWith(binding.suffix))) value+=binding.suffix;
+      return value;
+    }
+    function generatedTopic(question,topic,version=selectedVersion(question,topic)) {
+      if(version==="brief"){
+        const target=question.briefGroup||topic,missing=[];
+        if(!target.briefTemplate) throw new Error(`缺少精要版原文：${question.id}.${target.id}`);
+        const text=target.briefTemplate.replace(/\{(\w+)\}/g,(_,key)=>resolveBriefBinding(question,target,target.briefBindings[key],missing));
+        return {text,missing:[...new Set(missing)]};
+      }
+      if(topic===question.briefGroup){
+        const results=question.topics.filter(item=>isSelected(question.id,item.id)).map(item=>generatedFullTopic(question,item));
+        return {text:results.map(result=>result.text).join("\n\n"),missing:results.flatMap(result=>result.missing)};
+      }
+      return generatedFullTopic(question,topic);
+    }
+    function previewHtml(question,topic) {
+      const key=versionKey(question,topic),version=selectedVersion(question,topic),comparing=Boolean(state.comparing[key]);
+      const extras=(version==="brief"||comparing)?(topic.briefFields||[]).map(field=>fieldHtml(question,topic,field)).join(""):"";
+      return `<div class="version-tools"><div class="version-switch" role="group" aria-label="${esc(question.id)}採用版本"><button type="button" data-version-topic="${key}" data-version="full" aria-pressed="${version==="full"}">完整版</button><button type="button" data-version-topic="${key}" data-version="brief" aria-pressed="${version==="brief"}">精要版</button></div><button class="btn secondary small" type="button" data-compare-topic="${key}" aria-expanded="${comparing}">${comparing?"收起比較":"比較兩版"}</button></div>${extras?`<div class="topic-fields brief-fields">${extras}</div>`:""}<div class="comparison-text selected-preview">${esc(generatedTopic(question,topic).text)}</div>${comparing?`<div class="version-comparison">${["full","brief"].map(v=>`<div><span class="preview-label">${v==="full"?"完整版":"精要版"}</span><div class="comparison-text" data-comparison-version="${v}">${esc(generatedTopic(question,topic,v).text)}</div></div>`).join("")}</div>`:""}`;
+    }
+    function refreshVersionPreview(question,topic,container) {
+      container.querySelector(".selected-preview").textContent=generatedTopic(question,topic).text;
+      container.querySelectorAll("[data-comparison-version]").forEach(element=>{element.textContent=generatedTopic(question,topic,element.dataset.comparisonVersion).text;});
+      container.querySelectorAll("[data-value-key]").forEach(input=>{
+        const key=input.dataset.valueKey;if(Object.hasOwn(state.values,key)||input===document.activeElement) return;
+        const field=topic.briefFields?.find(item=>key===keyOf(question.id,topic.id,item.key));
+        if(field) input.value=briefFieldValue(question,topic,field);
+      });
+    }
+    function bindVersionActions(container=document) {
+      container.querySelectorAll("[data-version-topic]").forEach(button=>button.addEventListener("click",()=>{
+        const key=button.dataset.versionTopic,[questionId,topicId]=key.split("."),question=questions.find(q=>q.id===questionId),topic=findVersionTopic(question,topicId);
+        if(selectedVersion(question,topic)===button.dataset.version) return;
+        const affected=question.briefGroup?[key,...question.topics.map(item=>topicKey(question.id,item.id))]:[key];
+        if(affected.some(id=>state.drafts[id]?.dirty)&&!window.confirm("此條文已有人為修改。切換版本將以新版本的系統文字取代修改內容，確定要切換嗎？")) return;
+        affected.forEach(id=>{delete state.drafts[id];});state.versions[key]=button.dataset.version;renderQuestions();updateOutput();
+      }));
+      container.querySelectorAll("[data-compare-topic]").forEach(button=>button.addEventListener("click",()=>{const key=button.dataset.compareTopic;state.comparing[key]=!state.comparing[key];renderQuestions();}));
+    }
+    function briefVersionWarnings(question,topic) {
+      if(selectedVersion(question,topic)!=="brief") return [];
+      const result=[];
+      if(topic.briefWarning) result.push(`${question.id} ${topic.briefWarning}`);
+      if(topic.briefSameParty){
+        const [a,b]=topic.briefSameParty.map(key=>state.values[keyOf(question.id,topic.id,key)]);
+        if(a&&b&&a!==b) result.push(`${question.id} 完整版的辦理人與費用負擔人不同，但精要版原文將兩者合併敘述，請比較兩版並確認是否適用。`);
+      }
+      return result;
+    }
+    function renderQuestions() {
+      $("questionList").innerHTML=questions.map((question,index)=>{
+        if(question.disabled) return `<article class="question excluded"><div class="question-head"><h3 class="question-title">${question.id}　${esc(question.title)}</h3></div><div class="excluded-note">來源內容不足，暫不提供選填或生成條文。</div></article>`;
+        if(state.excluded[question.id]) return `<article class="question excluded"><div class="question-head"><div><h3 class="question-title">${question.id}　${esc(question.title)}</h3></div><button class="exclude-btn" type="button" data-restore="${question.id}" title="恢復問題">＋</button></div><div class="excluded-note">此題已排除；若與其他答案有關聯，右側仍可能顯示風險提醒。</div></article>`;
+        const activeTopics=question.topics.filter(topic=>isSelected(question.id,topic.id));
+        const details=activeTopics.map(topic=>`<section class="topic-detail"><h4>${esc(topic.label)}</h4><div class="topic-fields">${topic.fields.map(field=>fieldHtml(question,topic,field)).join("")}</div>${question.briefGroup?"":`<div class="inline-preview" data-version-preview="${versionKey(question,topic)}">${previewHtml(question,topic)}</div>`}</section>`).join("")+(question.briefGroup&&activeTopics.length?`<section class="topic-detail"><h4>${esc(question.title)}</h4><div class="inline-preview" data-version-preview="${versionKey(question,question.briefGroup)}">${previewHtml(question,question.briefGroup)}</div></section>`:"");
+        return `<article class="question"><div class="question-head"><div><h3 class="question-title">${question.id}　${esc(question.title)}</h3><span class="risk-tag ${question.risk!=="一般"?"high":""}">${esc(question.risk)}風險</span></div><button class="exclude-btn" type="button" data-exclude="${question.id}" title="排除此題">×</button></div><div class="question-body"><div class="topic-options">${question.topics.map(topic=>`<label class="check-option"><input type="${question.exclusive?"radio":"checkbox"}"${question.exclusive?` name="topic-${question.id}"`:""} data-topic="${question.id}.${topic.id}"${isSelected(question.id,topic.id)?" checked":""}/><span>${esc(topic.label)}</span></label>`).join("")}</div>${details}</div></article>`;
+      }).join("");
+      document.querySelectorAll("[data-topic]").forEach(input=>input.addEventListener("change",()=>{ const [questionId]=input.dataset.topic.split("."),question=questions.find(item=>item.id===questionId); if(question?.exclusive&&input.checked) question.topics.forEach(topic=>{ const key=topicKey(questionId,topic.id); state.selected[key]=false; delete state.drafts[key]; }); state.selected[input.dataset.topic]=input.checked; if(!input.checked) delete state.drafts[input.dataset.topic]; renderQuestions(); updateOutput(); }));
+      document.querySelectorAll("[data-value-key]").forEach(input=>{const update=()=>{
+        state.values[input.dataset.valueKey]=input.value;
+        const [questionId,topicId]=input.dataset.valueKey.split("."),question=questions.find(q=>q.id===questionId),topic=findVersionTopic(question,topicId);
+        if(input.tagName==="SELECT"){renderQuestions();updateOutput();return;}
+        const target=question.briefGroup||topic,key=versionKey(question,target),preview=document.querySelector(`[data-version-preview="${key}"]`);
+        if(preview)refreshVersionPreview(question,target,preview);updateOutput();
+      };input.addEventListener(input.tagName==="SELECT"?"change":"input",update);});
+      bindVersionActions();
+      document.querySelectorAll("[data-exclude]").forEach(button=>button.addEventListener("click",()=>{ state.excluded[button.dataset.exclude]=true; renderQuestions(); updateOutput(); }));
+      document.querySelectorAll("[data-restore]").forEach(button=>button.addEventListener("click",()=>{ delete state.excluded[button.dataset.restore]; renderQuestions(); updateOutput(); }));
+    }
+    function buildResult() {
+      const generated=[...FIXED_CLAUSES], missing=[], risks=[];
+      questions.forEach(question=>{
+        if(question.disabled || state.excluded[question.id]) return;
+        const activeTopics=question.topics.filter(topic=>isSelected(question.id,topic.id));
+        const outputTopics=question.briefGroup&&activeTopics.length&&selectedVersion(question,question.briefGroup)==="brief"?[question.briefGroup]:activeTopics;
+        outputTopics.forEach(topic=>{
+          const result=generatedTopic(question,topic); generated.push({id:topicKey(question.id,topic.id),text:result.text,version:selectedVersion(question,topic)}); missing.push(...result.missing);
+          briefVersionWarnings(question,topic).forEach(text=>risks.push({level:"warn",text}));
+          if(question.risk==="最高") risks.push({level:"danger",text:`${question.id} ${topic.label}屬最高風險事項，應由地政士確認文件、責任及未完成時的法律效果。`});
+          else if(question.risk==="高") risks.push({level:"warn",text:`${question.id} ${topic.label}應確認期限、責任、費用及佐證文件。`});
+        });
+      });
+      if(!state.excluded.Q04 && questions.find(q=>q.id==="Q04").topics.some(t=>isSelected("Q04",t.id))) risks.push({level:"danger",text:"Q04 請核對列管文件、檢測範圍與改善條件；未列管不代表沒有污染，檢測未發現污染也僅及於約定檢測範圍。"});
+      if(!state.excluded.Q17 && isSelected("Q17","details")) risks.push({level:"danger",text:"Q17 各類法人或組織所需程序應依個案文件由地政士確認，系統不自行判定。"});
+      if(!state.excluded.Q18 && isSelected("Q18","details")) risks.push({level:"warn",text:"Q18 營業稅、含稅價款與發票須依雙方確認內容填寫，系統不計算或認定稅負。"});
+      if(!state.excluded.Q19 && questions.find(q=>q.id==="Q19").topics.some(t=>isSelected("Q19",t.id))) risks.push({level:"danger",text:"Q19 請核對個案園區出售手冊、原始契約及主管機關文件；產一與產二條件分別查證，產二也不得推定無移轉限制。"});
+      if(state.excluded.Q04 && !state.excluded.Q08 && isSelected("Q08","details")) risks.push({level:"warn",text:"Q04 已排除，但本案涉及污水槽或特殊設施，仍應確認內容物及是否需要污染檢測。"});
+      if(state.excluded.Q02 && !state.excluded.Q19 && isSelected("Q19","industrialOne")) risks.push({level:"warn",text:"Q02 已排除，但產一用地查核涉及工廠登記，請確認原登記及後續登記處理。"});
+      const system=generated.map(item=>{
+        const existing=state.drafts[item.id];
+        if(!existing) state.drafts[item.id]={generated:item.text,value:item.text,dirty:false};
+        else if(!existing.dirty){ existing.generated=item.text; existing.value=item.text; }
+        else existing.generated=item.text;
+        return {id:item.id,text:state.drafts[item.id].value,dirty:state.drafts[item.id].dirty,type:"system",version:item.version};
+      });
+      const active=new Set(generated.map(item=>item.id)); Object.keys(state.drafts).forEach(id=>{ if(!active.has(id)) delete state.drafts[id]; });
+      const manual=state.manual.map(item=>({id:item.id,text:item.text,dirty:true,type:"manual"}));
+      const allItems=[...system,...manual], validIds=new Set(allItems.map(item=>item.id));
+      state.order=state.order.filter(id=>validIds.has(id));
+      system.forEach((item,systemIndex)=>{
+        if(state.order.includes(item.id)) return;
+        const previous=system.slice(0,systemIndex).map(entry=>entry.id).reverse().find(id=>state.order.includes(id));
+        if(previous) state.order.splice(state.order.indexOf(previous)+1,0,item.id);
+        else state.order.unshift(item.id);
+      });
+      manual.forEach(item=>{ if(!state.order.includes(item.id)) state.order.push(item.id); });
+      const byId=new Map(allItems.map(item=>[item.id,item]));
+      return {items:state.order.map(id=>byId.get(id)).filter(Boolean),missing:[...new Set(missing)],risks:risks.filter((item,index,array)=>array.findIndex(other=>other.text===item.text)===index)};
+    }
+    function renderClauses(items) {
+      return `<div class="clause-list">${items.map((item,index)=>`<div class="clause"><div class="clause-head"><span>${index+1}、特約條文${item.version?`<span class="version-label">${item.version==="brief"?"精要版":"完整版"}</span>`:""}</span><div class="clause-actions">${item.type==="manual"?`<span class="manual-badge added">人為新增</span><button class="btn secondary small" data-move-up="${item.id}" type="button" title="上移"${index===0?" disabled":""}>↑</button><button class="btn secondary small" data-move-down="${item.id}" type="button" title="下移"${index===items.length-1?" disabled":""}>↓</button><button class="btn danger small" data-delete-manual="${item.id}" type="button">刪除</button>`:`<span class="manual-badge" data-manual-badge="${item.id}"${item.dirty?"":" hidden"}>人為修改</span><button class="btn secondary small" data-reset-system="${item.id}" type="button">恢復系統文字</button>`}</div></div><textarea data-clause-id="${item.id}" data-clause-type="${item.type}">${esc(item.text)}</textarea></div>`).join("")}</div>`;
+    }
+    function bindClauseActions() {
+      document.querySelectorAll("[data-clause-id]").forEach(field=>field.addEventListener("input",()=>{ const id=field.dataset.clauseId; if(field.dataset.clauseType==="manual"){ const item=state.manual.find(entry=>entry.id===id); if(item) item.text=field.value; } else { const draft=state.drafts[id]; if(!draft) return; draft.value=field.value; draft.dirty=field.value!==draft.generated; const badge=document.querySelector(`[data-manual-badge="${id}"]`); if(badge) badge.hidden=!draft.dirty; } }));
+      document.querySelectorAll("[data-reset-system]").forEach(button=>button.addEventListener("click",()=>{ const draft=state.drafts[button.dataset.resetSystem]; if(draft){ draft.value=draft.generated; draft.dirty=false; updateOutput(); } }));
+      document.querySelectorAll("[data-delete-manual]").forEach(button=>button.addEventListener("click",()=>{ const id=button.dataset.deleteManual; state.manual=state.manual.filter(item=>item.id!==id); state.order=state.order.filter(itemId=>itemId!==id); updateOutput(); }));
+      const move=(id,direction)=>{ const index=state.order.indexOf(id), target=index+direction; if(index<0||target<0||target>=state.order.length) return; [state.order[index],state.order[target]]=[state.order[target],state.order[index]]; updateOutput(); };
+      document.querySelectorAll("[data-move-up]").forEach(button=>button.addEventListener("click",()=>move(button.dataset.moveUp,-1)));
+      document.querySelectorAll("[data-move-down]").forEach(button=>button.addEventListener("click",()=>move(button.dataset.moveDown,1)));
+    }
+    function updateOutput() {
+      const result=buildResult(); $("clauseOutput").innerHTML=renderClauses(result.items); bindClauseActions();
+      $("riskOutput").innerHTML=result.risks.length?`<ul class="risk-list">${result.risks.map(item=>`<li class="${item.level}">${esc(item.text)}</li>`).join("")}</ul>`:`<p class="empty-state">目前沒有高風險提醒。</p>`;
+      $("missingOutput").innerHTML=result.missing.length?`<ul class="missing-list">${result.missing.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>`:`<p class="empty-state">目前沒有待補資料。</p>`;
+      $("clauseCount").textContent=`${result.items.length} 條`; $("riskCount").textContent=`${result.risks.length} 項`; $("missingCount").textContent=`${result.missing.length} 項`;
+    }
+    function addManualClause() { state.manual.push({id:`manual-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,text:""}); updateOutput(); const fields=document.querySelectorAll('[data-clause-type="manual"]'); fields[fields.length-1]?.focus(); }
+    function switchPanel(panel) { state.activePanel=panel; document.querySelectorAll(".side-tab").forEach(button=>button.classList.toggle("active",button.dataset.panel===panel)); document.querySelectorAll("[data-panel-content]").forEach(content=>content.hidden=content.dataset.panelContent!==panel); }
+    function plainText() { const items=buildResult().items; return items.map((item,index)=>`${index+1}、${item.text}`).join("\n"); }
+    async function copyClauses() { const text=plainText(); try { await navigator.clipboard.writeText(text); } catch { const area=document.createElement("textarea"); area.value=text; document.body.appendChild(area); area.select(); document.execCommand("copy"); area.remove(); } showToast("已複製特約草稿"); }
+    function parseRocDate(value) { const text=String(value||"").trim(); const roc=text.match(/(\d{2,3})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})/); if(roc) return {year:roc[1],month:roc[2],day:roc[3]}; const numeric=text.match(/(\d{2,4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})/); if(numeric){ const year=Number(numeric[1]); return {year:String(year>1911?year-1911:year),month:numeric[2],day:numeric[3]}; } return {year:"　　",month:"　",day:"　"}; }
+    function splitClauses(clauses) {
+      // Measure with the actual print rules, isolated from the visible application.
+      const host=document.createElement("div");
+      host.style.cssText="position:fixed;left:-10000px;top:0;visibility:hidden;pointer-events:none";
+      const shadow=host.attachShadow({mode:"open"});
+      const styles=[...document.querySelectorAll("style")].map(style=>style.textContent.replace(/@media\s+print\s*\{/g,"@media all {")).join("\n");
+      shadow.innerHTML=`<style>${styles}</style><div class="print-area"><section class="contract-page"><main class="contract-content"><h1 class="contract-title">特約事項：</h1><ol class="contract-clauses"></ol></main>${signatureHtml()}</section></div>`;
+      document.body.appendChild(host);
+      try {
+        const page=shadow.querySelector(".contract-page"),content=shadow.querySelector(".contract-content"),list=shadow.querySelector("ol"),signatures=shadow.querySelector(".contract-signatures");
+        let remainingSpace=0;
+        const fits=(entries,last)=>{
+          page.classList.toggle("is-last",last);
+          list.replaceChildren(...entries.map(entry=>{
+            const li=document.createElement("li"); li.value=entry.number; li.textContent=entry.text;
+            li.classList.toggle("is-continuation",!!entry.continued); return li;
+          }));
+          const bottom=list.lastElementChild?.getBoundingClientRect().bottom||list.getBoundingClientRect().top;
+          const limit=last?Math.min(content.getBoundingClientRect().bottom,signatures.getBoundingClientRect().top-8*96/25.4):content.getBoundingClientRect().bottom;
+          remainingSpace=limit-bottom;
+          return remainingSpace>=2;
+        };
+        const pending=clauses.map((text,index)=>({text:String(text),number:index+1,continued:false})),pages=[];
+        while(pending.length){
+          if(fits(pending,true)){pages.push(pending.splice(0));break;}
+          const current=[];
+          while(pending.length&&fits([...current,pending[0]],false)) current.push(pending.shift());
+          if(pending.length){
+            // Fill remaining space; continue a split clause without renumbering it.
+            const entry=pending[0],characters=Array.from(entry.text);
+            let low=1,high=characters.length,best=0;
+            while(low<=high){
+              const middle=Math.floor((low+high)/2);
+              if(fits([...current,{...entry,text:characters.slice(0,middle).join("")}],false)){best=middle;low=middle+1;}else high=middle-1;
+            }
+            // Avoid leaving a lone punctuation mark or one-line tail on the next page.
+            if(best>0&&best<characters.length){
+              fits([{...entry,text:characters.slice(best).join("")}],false);
+              const lineHeight=parseFloat(getComputedStyle(list).lineHeight);
+              if(list.lastElementChild.getBoundingClientRect().height<2*lineHeight){
+                let left=1,right=best,safe=0;
+                while(left<=right){
+                  const middle=Math.floor((left+right)/2);
+                  fits([{...entry,text:characters.slice(middle).join("")}],false);
+                  if(list.lastElementChild.getBoundingClientRect().height>=2*lineHeight){safe=middle;left=middle+1;}else right=middle-1;
+                }
+                best=safe;
+              }
+            }
+            if(best>0&&/^[。；，、：！？.!?;:,）】」』]/u.test(characters.slice(best).join("").trimStart())) best=Math.max(1,best-24);
+            if(best){
+              current.push({...entry,text:characters.slice(0,best).join("")});
+              pending[0]={...entry,text:characters.slice(best).join(""),continued:true};
+            } else if(!current.length) throw new Error("PDF 條文無法排入頁面");
+          }
+          // Keep the preceding page full; move only a short final clause or tail.
+          if(!pending.length&&!fits(current,true)){
+            const entry=current.at(-1),lineHeight=parseFloat(getComputedStyle(list).lineHeight);
+            const wholeFits=fits([entry],true),entryHeight=list.lastElementChild.getBoundingClientRect().height;
+            if(current.length>1&&wholeFits&&entryHeight<=5*lineHeight){
+              pages.push(current.slice(0,-1),[entry]);break;
+            }
+            const characters=Array.from(entry.text);
+            let low=1,high=characters.length-1,best=null;
+            while(low<=high){
+              const middle=Math.floor((low+high)/2);
+              const cut=/^[。；，、：！？.!?;:,）】」』]/u.test(characters.slice(middle).join("").trimStart())?Math.max(1,middle-24):middle;
+              const prefix=[...current.slice(0,-1),{...entry,text:characters.slice(0,cut).join("")}];
+              const suffix=[{...entry,text:characters.slice(cut).join(""),continued:true}];
+              const prefixFits=fits(prefix,false),suffixFits=fits(suffix,true);
+              const tailHeight=list.lastElementChild.getBoundingClientRect().height;
+              if(prefixFits&&suffixFits&&tailHeight>=3*lineHeight) best={prefix,suffix};
+              if(tailHeight>=3*lineHeight) low=middle+1; else high=middle-1;
+            }
+            if(!best) throw new Error("PDF 簽章頁無法完成分頁");
+            pages.push(best.prefix,best.suffix);break;
+          }
+          pages.push(current);
+        }
+        return pages.length?pages:[[]];
+      } finally { host.remove(); }
+    }
+    function signatureHtml() {
+      const date=parseRocDate(document.querySelector('[data-case="contractDate"]').value);
+      return `<footer class="contract-signatures"><div class="signature-row"><span class="signature-label">買方簽章：</span><span class="signature-line"></span><span class="signature-seal"></span></div><div class="signature-row"><span class="signature-label">賣方簽章：</span><span class="signature-line"></span><span class="signature-seal"></span></div><div class="contract-date"><span>中華民國</span><span>${esc(date.year)} 年</span><span>${esc(date.month)} 月</span><span>${esc(date.day)} 日</span></div></footer>`;
+    }
+    function printDocument(items) {
+      const contractNo=document.querySelector('[data-case="contractNo"]').value.trim(),pages=splitClauses(items.map(item=>item.text));
+      return pages.map((clauses,pageIndex)=>{
+        const last=pageIndex===pages.length-1;
+        return `<section class="contract-page${last?" is-last":""}"><header class="contract-header"><img class="contract-brand" src="assets/yiqing-header.png" alt="宜慶地政 服務專線 06-2951356"/><div class="contract-number">契約書編號：<span class="contract-number-value">${esc(contractNo)}</span></div></header><img class="contract-watermark" src="assets/yiqing-watermark.png" alt=""/><main class="contract-content"><h1 class="contract-title">特約事項：</h1><ol class="contract-clauses">${clauses.map(entry=>`<li value="${entry.number}"${entry.continued?' class="is-continuation"':""}>${esc(entry.text)}</li>`).join("")}</ol></main>${last?signatureHtml():""}</section>`;
+      }).join("");
+    }
+    async function waitForPrintLayout(container) {
+      const images=[...container.querySelectorAll("img")];
+      await Promise.all(images.map(async image=>{
+        if(!image.complete) await new Promise(resolve=>{ image.addEventListener("load",resolve,{once:true}); image.addEventListener("error",resolve,{once:true}); });
+        if(image.decode) { try { await image.decode(); } catch {} }
+      }));
+      if(document.fonts?.ready) await document.fonts.ready;
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    }
+    async function exportPdf() { const result=buildResult(),area=$("printArea"); showToast("正在準備 PDF 格式"); if(document.fonts?.ready) await document.fonts.ready; area.innerHTML=printDocument(result.items); await waitForPrintLayout(area); showToast("請在列印視窗選擇另存為 PDF"); window.print(); }
+    function showToast(text) { const toast=$("toast"); toast.textContent=text; toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>toast.classList.remove("show"),1800); }
+    function resetAll() { state.selected={}; state.values={}; state.excluded={}; state.drafts={}; state.manual=[]; state.order=[]; state.versions={}; state.comparing={}; document.querySelectorAll("[data-case]").forEach(input=>input.value=""); $("printArea").innerHTML=""; renderQuestions(); updateOutput(); switchPanel("pdf"); showToast("已恢復初始狀態"); }
+    function confirmReset() { if(window.confirm("確定要恢復初始狀態嗎？目前填寫的答案、人工條文及修改內容都會被清除，且無法復原。")) resetAll(); }
+    function loadSample() {
+      resetAll(); document.querySelector('[data-case="contractNo"]').value="1151014001"; document.querySelector('[data-case="contractDate"]').value="115年10月14日";
+      const sample={
+        Q06:["100 kW","00-1234-5678-9","三相動力電及變壓器一組","賣方所有，現可正常運作","賣方","移轉","賣方","由買方負擔"],
+        Q07:["天車一組及空壓機一臺","無另行計價設備","賣方自用工作臺","115年11月30日"],
+        Q09:["園區管理單位依每月實際排放量計費","正式交屋日","賣方","買方","20000","交屋時由買方支付賣方並承受保證金"]
+      };
+      Object.entries(sample).forEach(([id,values])=>{state.selected[id+".details"]=true;values.forEach((value,index)=>state.values[id+".details.value"+(index+1)]=value);});
+      questions.forEach(question=>question.topics.forEach(topic=>topic.fields.filter(field=>["date","datetime-local"].includes(field.type)).forEach(field=>{const key=keyOf(question.id,topic.id,field.key);if(state.values[key]) state.values[key]=isoDate(state.values[key]);})));
+      renderQuestions(); updateOutput(); showToast("已載入範例");
+    }
+    document.querySelectorAll(".side-tab").forEach(button=>button.addEventListener("click",()=>switchPanel(button.dataset.panel)));
+    document.querySelectorAll("[data-case]").forEach(input=>input.addEventListener("input",updateOutput));
+    $("addClauseBtn").addEventListener("click",addManualClause); $("copyBtn").addEventListener("click",copyClauses); $("downloadBtn").addEventListener("click",exportPdf); $("resetBtn").addEventListener("click",confirmReset); $("loadSampleBtn").addEventListener("click",loadSample);
+    renderQuestions(); updateOutput(); switchPanel("pdf");
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>透天中古屋特約事項網頁demo</title>
+  <style>
+    :root {
+      --ink:#17211d; --muted:#68746e; --line:#d8dedb; --soft:#f5f7f6;
+      --green:#245c47; --green-2:#34745a; --amber:#a04b11; --amber-bg:#fff7ed;
+      --danger:#a72d2d; --white:#fff; --shadow:0 8px 24px rgba(25,43,35,.08);
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:#edf1ef; font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; letter-spacing:0; }
+    button,input,select,textarea { font:inherit; letter-spacing:0; }
+    button { cursor:pointer; }
+    body > header { min-height:64px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:16px; background:#fff; border-bottom:1px solid var(--line); }
+    .brand h1 { margin:0; font-size:20px; }
+    .brand span { display:block; margin-top:3px; color:var(--muted); font-size:12px; }
+    .header-actions,.clause-actions,.topic-actions { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+    .btn { min-height:36px; padding:7px 12px; border:1px solid transparent; border-radius:6px; background:var(--green); color:#fff; font-weight:700; }
+    .btn:hover { background:var(--green-2); }
+    .btn:disabled { opacity:.38; cursor:not-allowed; }
+    .btn.secondary { border-color:var(--line); background:#fff; color:var(--ink); }
+    .btn.danger { border-color:#e7b5b5; background:#fff; color:var(--danger); }
+    .btn.small { min-height:30px; padding:4px 8px; font-size:12px; }
+    .layout { display:grid; grid-template-columns:280px minmax(480px,1fr) minmax(360px,470px); min-height:calc(100vh - 64px); }
+    aside,main,.result-panel { min-width:0; padding:14px; }
+    aside { background:#f8faf9; border-right:1px solid var(--line); }
+    main { border-right:1px solid var(--line); }
+    .result-panel { background:#f8faf9; }
+    .side-tabs { display:grid; grid-template-columns:repeat(2,1fr); gap:4px; margin-bottom:12px; }
+    .side-tab { min-height:38px; padding:6px 4px; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--muted); font-size:12px; font-weight:700; }
+    .side-tab.active { border-color:var(--green); background:var(--green); color:#fff; }
+    .side-panel[hidden] { display:none; }
+    .section,.output-block { margin-bottom:12px; background:#fff; border:1px solid var(--line); border-radius:7px; box-shadow:var(--shadow); }
+    .section { padding:14px; }
+    .section-title,.output-title { margin:0; display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:15px; }
+    .section-subtitle { margin:7px 0 0; color:var(--muted); font-size:12px; line-height:1.6; }
+    .fields { display:grid; gap:10px; margin-top:12px; }
+    .field { display:grid; gap:5px; color:var(--muted); font-size:12px; font-weight:700; }
+    input,select,textarea { width:100%; border:1px solid #cbd3cf; border-radius:5px; background:#fff; color:var(--ink); padding:8px 9px; outline:none; }
+    input:focus,select:focus,textarea:focus { border-color:var(--green-2); box-shadow:0 0 0 2px rgba(52,116,90,.12); }
+    .question-list { display:grid; gap:12px; }
+    .question { background:#fff; border:1px solid var(--line); border-radius:7px; box-shadow:var(--shadow); overflow:hidden; }
+    .question-head { padding:13px 14px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); }
+    .question-title { margin:0; font-size:15px; line-height:1.5; }
+    .risk-tag,.tag { display:inline-flex; align-items:center; min-height:24px; padding:2px 7px; border-radius:4px; background:#edf5f1; color:var(--green); font-size:11px; font-weight:700; white-space:nowrap; }
+    .risk-tag.high { background:#fff0f0; color:var(--danger); }
+    .exclude-btn { width:30px; height:30px; padding:0; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--muted); font-size:19px; line-height:1; }
+    .question-body { padding:13px 14px; }
+    .topic-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .check-option { min-height:42px; padding:8px 9px; display:flex; align-items:flex-start; gap:8px; border:1px solid var(--line); border-radius:5px; background:var(--soft); font-size:13px; line-height:1.45; }
+    .check-option input { width:17px; height:17px; margin:1px 0 0; flex:0 0 auto; accent-color:var(--green); }
+    .topic-detail { margin-top:12px; padding:12px; border-left:3px solid var(--green-2); background:#f8faf9; }
+    .topic-detail h4 { margin:0 0 10px; font-size:14px; }
+    .topic-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+    .topic-fields .wide { grid-column:1/-1; }
+    .inline-preview { margin-top:10px; padding-top:10px; border-top:1px dashed #bdc8c2; color:#30423a; font-size:13px; line-height:1.75; }
+    .version-tools { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .version-switch { display:inline-flex; border:1px solid #bdc8c2; border-radius:5px; overflow:hidden; }
+    .version-switch button { border:0; padding:7px 12px; background:#fff; color:var(--green); }
+    .version-switch button[aria-pressed="true"] { background:var(--green); color:#fff; }
+    .version-switch button:focus-visible { outline:2px solid #b45309; outline-offset:-3px; }
+    .version-comparison { display:grid; gap:10px; margin-top:12px; }
+    .comparison-text { white-space:pre-wrap; }
+    .version-label { color:var(--muted); font-weight:400; margin-left:6px; }
+    .remedy-field { margin:12px 0; font-size:13px; }
+    .remedy-field > span { display:block; margin-bottom:5px; }
+    .remedy-menu { position:relative; }
+    .remedy-menu summary { padding:9px 11px; min-height:38px; border:1px solid var(--line); border-radius:5px; background:#fff; cursor:pointer; list-style-position:inside; }
+    .remedy-menu summary:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+    .remedy-options { position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:10; display:grid; gap:4px; padding:6px; border:1px solid var(--line); border-radius:5px; background:#fff; box-shadow:0 6px 18px #0002; }
+    .remedy-menu:not([open]) .remedy-options { display:none; }
+    .remedy-options .check-option { min-width:0; }
+    .preview-label { display:block; margin-bottom:4px; color:var(--green); font-size:11px; font-weight:700; }
+    .question.excluded .question-head { border-bottom:0; }
+    .excluded-note { padding:0 14px 13px; color:var(--muted); font-size:12px; }
+    .manage-list { display:grid; gap:8px; margin-top:10px; }
+    .manage-row { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding:8px; border:1px solid var(--line); border-radius:5px; font-size:12px; line-height:1.45; }
+    .output-title { padding:10px 12px; border-bottom:1px solid var(--line); }
+    .output-body { padding:12px; }
+    .clause-list { display:grid; gap:10px; }
+    .clause { padding:10px 11px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    .clause-head { margin-bottom:7px; display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--green); font-size:12px; font-weight:700; }
+    .clause textarea { min-height:96px; resize:vertical; border:0; padding:0; line-height:1.75; }
+    .manual-badge { display:inline-flex; align-items:center; min-height:28px; padding:3px 8px; border:1px solid #b45309; border-radius:4px; background:var(--amber-bg); color:#9a3412; font-size:12px; font-weight:700; white-space:nowrap; }
+    .manual-badge.added { border-color:#34745a; background:#edf7f2; color:#245c47; }
+    .manual-badge[hidden] { display:none; }
+    .empty-state { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+    .risk-list,.missing-list { margin:0; padding-left:20px; font-size:13px; line-height:1.65; }
+    .risk-list li.danger { color:var(--danger); }
+    .risk-list li.warn { color:var(--amber); }
+    .chat-log { height:300px; overflow:auto; padding:10px; border:1px solid var(--line); border-radius:5px; background:var(--soft); }
+    .chat-message { margin-bottom:8px; padding:8px 9px; border-radius:5px; background:#fff; font-size:13px; line-height:1.55; }
+    .chat-message.system { border-left:3px solid var(--green); }
+    .chat-compose { display:grid; gap:8px; margin-top:9px; }
+    .chat-compose textarea { min-height:74px; resize:vertical; }
+    .toast { position:fixed; left:50%; bottom:22px; z-index:20; transform:translate(-50%,18px); padding:9px 14px; border-radius:5px; background:#17211d; color:#fff; opacity:0; pointer-events:none; transition:.18s; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .print-area { display:none; }
+    @media (min-width:1181px) {
+      body { overflow:hidden; }
+      .layout { height:calc(100vh - 64px); min-height:0; overflow:hidden; }
+      aside,main,.result-panel { height:100%; overflow-y:auto; scrollbar-gutter:stable; }
+    }
+    @media (max-width:1180px) { .layout { grid-template-columns:260px 1fr; } .result-panel { grid-column:1/-1; border-top:1px solid var(--line); } main { border-right:0; } }
+    @media (max-width:760px) { body > header { align-items:flex-start; flex-direction:column; } .header-actions { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } .header-actions .btn { width:100%; } .layout { display:block; } aside,main,.result-panel { border:0; padding:10px; } .topic-options,.topic-fields { grid-template-columns:1fr; } .topic-fields .wide { grid-column:auto; } }
+    @media print {
+      @page { size:A4; margin:0; }
+      body { background:#fff; color:#000; overflow:visible; }
+      body > header,.layout,.toast { display:none !important; }
+      .print-area { display:block; font-family:"Microsoft JhengHei","Noto Sans TC",serif; font-size:12pt; line-height:1.75; }
+      .contract-page { position:relative; width:210mm; height:296.8mm; overflow:hidden; background:#fff; break-inside:avoid-page; page-break-inside:avoid; }
+      .contract-page:not(:last-child) { break-after:page; page-break-after:always; }
+      .contract-header { position:absolute; z-index:3; top:11.5mm; left:16.5mm; right:16.5mm; height:13mm; }
+      .contract-brand { position:absolute; top:0; left:0; width:82mm; height:auto; }
+      .contract-number { position:absolute; top:7mm; right:0; white-space:nowrap; font-size:11pt; }
+      .contract-number-value { display:inline-block; min-width:34mm; padding:0 1.5mm 1mm; border-bottom:.3mm solid #222; text-align:center; }
+      .contract-watermark { position:absolute; z-index:0; top:86mm; left:50%; width:105mm; transform:translateX(-50%); opacity:.13; }
+      .contract-content { position:absolute; z-index:2; top:28mm; left:18mm; right:18mm; bottom:14mm; height:auto; min-height:0; padding:0; border:0; overflow:visible; scrollbar-gutter:auto; }
+      .contract-page.is-last .contract-content { bottom:78mm; }
+      .contract-title { margin:0 0 9mm; font-family:"DFKai-SB","BiauKai","Microsoft JhengHei",serif; font-size:24pt; line-height:1.1; }
+      .contract-clauses { margin:0; padding-left:9mm; }
+      .contract-clauses li { margin-bottom:3mm; padding-left:1mm; break-inside:avoid; text-align:justify; white-space:pre-wrap; overflow-wrap:anywhere; }
+      .contract-clauses li.is-continuation { list-style:none; }
+      .contract-signatures { position:absolute; z-index:2; left:18mm; right:18mm; bottom:13.5mm; min-height:58mm; display:grid; align-content:end; gap:7mm; }
+      .contract-page:not(.is-last) .contract-signatures { display:none; }
+      .signature-row { display:grid; grid-template-columns:30mm 1fr 22mm; align-items:end; gap:3mm; }
+      .signature-label { font-size:13pt; }
+      .signature-line { height:10mm; border-bottom:.3mm solid #222; }
+      .signature-seal { width:18mm; height:18mm; border:.3mm solid #222; }
+      .contract-date { margin-top:4mm; display:flex; justify-content:space-between; font-size:13pt; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><h1>透天中古屋特約事項網頁demo</h1><span>林宜慶地政士事務所</span></div>
+    <div class="header-actions">
+      <button class="btn secondary" id="loadSampleBtn" type="button">載入範例</button>
+      <button class="btn secondary" id="resetBtn" type="button">恢復初始</button>
+      <button class="btn" id="copyBtn" type="button">複製特約</button>
+      <button class="btn" id="downloadBtn" type="button">匯出 PDF</button>
+    </div>
+  </header>
+  <div class="layout">
+    <aside>
+      <nav class="side-tabs" aria-label="左側功能">
+        <button class="side-tab active" type="button" data-panel="pdf">PDF 資料</button>
+        <button class="side-tab" type="button" data-panel="ai">AI 聊天室</button>
+      </nav>
+      <section class="side-panel" data-panel-content="pdf">
+        <div class="section">
+          <h2 class="section-title">PDF 資料</h2>
+          <div class="fields">
+            <label class="field">契約書編號<input type="text" data-case="contractNo" placeholder="例如：11506012345" /></label>
+            <label class="field">契約日期<input type="text" data-case="contractDate" placeholder="例如：115年6月10日" /></label>
+          </div>
+        </div>
+      </section>
+      <section class="side-panel" data-panel-content="ai" hidden>
+        <div class="section">
+          <h2 class="section-title">AI 聊天室</h2>
+          <div class="chat-log" id="chatLog"><div class="chat-message system">AI 功能尚未連接。未來將可參考目前問答與特約草稿回答合約問題。</div></div>
+          <div class="chat-compose"><textarea id="chatInput" placeholder="輸入合約問題" disabled></textarea><button class="btn" type="button" id="chatSendBtn" disabled>傳送</button></div>
+        </div>
+      </section>
+    </aside>
+    <main>
+      <section class="section"><h2 class="section-title">透天中古屋題庫</h2></section>
+      <div class="question-list" id="questionList"></div>
+    </main>
+    <section class="result-panel">
+      <div class="output-block">
+        <div class="output-title"><span>特約事項草稿</span><div class="topic-actions"><span class="tag" id="clauseCount">3 條</span><button class="btn secondary small" id="addClauseBtn" type="button">新增條文</button></div></div>
+        <div class="output-body" id="clauseOutput"></div>
+      </div>
+      <div class="output-block"><div class="output-title">高風險提醒 <span class="tag" id="riskCount">0 項</span></div><div class="output-body" id="riskOutput"></div></div>
+      <div class="output-block"><div class="output-title">待補資料 <span class="tag" id="missingCount">0 項</span></div><div class="output-body" id="missingOutput"></div></div>
+    </section>
+  </div>
+  <div class="print-area" id="printArea"></div><div class="toast" id="toast"></div>
+  <script>
+    const FIXED_CLAUSES = [
+      { id:"fixed-1", text:"買方於完稅款時，應依地政士通知，將辦理產權移轉所需之相關稅費、規費及代辦費匯入指定銀行帳戶。" },
+      { id:"fixed-2", text:"雙方同意於辦理產權登記時，授權地政士依報稅日期訂立物權契約日期。" },
+      { id:"fixed-3", text:"雙方合意以「林宜慶地政士事務所」為本約騎縫章。" }
+    ];
+    const f = (key,label,type="text",options=[],wide=false,placeholder="") => ({key,label,type,options,wide,placeholder});
+    const questions = [
+      { id:"H01", title:"屋況瑕疵、滲漏水、壁癌、龜裂及地板膨拱爆磚", risk:"高", topics:[
+        { id:"repair", label:"滲漏水修繕及保固", fields:[f("location","具體位置"),f("issue","滲水或漏水情形"),f("party","由誰處理","select",["賣方","買方","雙方另議"]),f("deadline","完成期限"),f("repair","具體修繕方式","text",[],true),f("warranty","保固內容及期間","text",[],true)], template:"本標的{location}目前有{issue}。雙方約定由{party}於{deadline}{repair}；修繕後依{warranty}負責，其他未約定事項不由系統自行推定。" },
+        { id:"buyer", label:"買方自行處理", fields:[f("location","具體位置"),f("issue","具體事項"),f("responsibility","賣方責任範圍","text",[],true)], template:"本標的{location}有{issue}情形，買方已於簽約前知悉其位置與狀況；雙方約定由買方於交屋後自行處理，賣方是否負擔及負擔至何範圍，依{responsibility}辦理。" },
+        { id:"multi", label:"多項屋況整合", fields:[f("details","各位置、事項及處理方式","textarea",[],true),f("responsibility","費用、保固及責任範圍","textarea",[],true)], template:"本標的目前已知屋況如下：{details}。各項費用、保固及處理後責任範圍分別依{responsibility}辦理。" }
+      ]},
+      { id:"H02", title:"斷水斷電及水電附屬設備", risk:"一般", topics:[
+        { id:"utilities", label:"斷水斷電", fields:[f("status","目前狀態","select",["供水正常","已停止供水","供電正常","已停止供電","其他"]),f("action","辦理事項","select",["恢復供水","恢復供電","相關申請","其他"]),f("party","辦理人","select",["賣方","買方","雙方"]),f("deadline","期限"),f("fee","費用負擔","select",["賣方","買方","雙方另議"])], template:"本標的目前{status}。雙方約定由{party}於{deadline}前辦理{action}，所需費用由{fee}負擔。" },
+        { id:"equipment", label:"水塔、抽水馬達、淨水器", fields:[f("name","設備名稱"),f("ownership","所有及使用情形"),f("handling","交付或拆除方式","textarea",[],true),f("deadline","期限"),f("thirdParty","第三人所有或租賃之處理","text",[],true)], template:"本標的現設有{name}，其所有及使用情形為{ownership}。雙方約定{handling}；屬第三人所有或租賃者，由當事人於{deadline}前依{thirdParty}辦理。" },
+        { id:"solar", label:"太陽能自設或出租", fields:[f("owner","所有人或設置人"),f("period","契約期間"),f("handling","設備及契約處理","select",["由買方承受","賣方於期限前終止或拆除","其他"]),f("detail","收益、費用及權利義務","textarea",[],true)], template:"本標的屋頂設有太陽能設備，所有人或設置人為{owner}，相關租賃或使用契約期間為{period}。雙方約定該設備及契約{handling}，收益、費用及權利義務依{detail}辦理。" },
+        { id:"sewer", label:"污水下水道接管", fields:[f("status","接管情形","select",["已接管","尚未接管","工程進行中","其他"]),f("party","辦理人","select",["賣方","買方","雙方"]),f("deadline","期限"),f("method","工程及費用處理方式","textarea",[],true)], template:"本標的所在地之污水下水道接管情形為{status}。雙方約定接管、用戶排水設備、工程及費用由{party}於{deadline}前依{method}辦理。" },
+        { id:"water", label:"地下水供水", fields:[f("source","目前供水方式","select",["自來水","地下水","其他"])], template:"本標的目前供水方式為{source}，買方已知悉目前供水方式。日後如政府或台灣自來水公司辦理自來水延管或用戶接水工程，其申裝條件、工程期程及相關費用依主管機關及台灣自來水公司規定辦理。" }
+      ]},
+      { id:"H03", title:"提前點交及第三人占用", risk:"高", topics:[
+        { id:"early", label:"提前點交", fields:[f("date","提前點交日期","date"),f("scope","鑰匙或使用範圍"),f("purpose","用途","select",["進住","裝修","放置物品","其他"]),f("limits","行為及限制","textarea",[],true),f("fee","水電及其他費用負擔"),f("return","買賣未完成時返還方式及期限","textarea",[],true)], template:"雙方同意買方自{date}起於正式交屋前先行取得{scope}，作{purpose}。買方得進行之行為及限制為{limits}，水電及其他費用由{fee}負擔；買賣未完成時，買方應依{return}返還標的、物品及鑰匙。" },
+        { id:"occupied", label:"第三人占用", fields:[f("person","占用人"),f("scope","占用範圍"),f("basis","原因或依據"),f("party","負責處理者"),f("deadline","遷離期限","date"),f("handling","費用及未完成時處理","textarea",[],true)], template:"本標的目前由{person}使用或占用{scope}，其原因或依據為{basis}。雙方約定由{party}於{deadline}前完成遷離、騰空及點交，相關費用與未完成時之處理依{handling}辦理。" }
+      ]},
+      { id:"H04", title:"出租、終止租約、租約承受、換約及押租金", risk:"高", topics:[
+        { id:"terminate", label:"終止租約", fields:[f("tenant","承租人"),f("scope","租賃範圍"),f("deadline","終止及遷離期限"),f("settlement","押租金、租金與水電費結算","textarea",[],true)], template:"本標的目前出租予{tenant}，租賃範圍為{scope}。雙方約定由賣方於{deadline}完成租賃關係終止、承租人遷離、房屋騰空及點交；押租金、租金與水電費之處理方式為{settlement}。" },
+        { id:"assume", label:"租約承受", fields:[f("tenant","承租人"),f("endDate","租期至"),f("rent","每月租金"),f("deposit","押租金"),f("startDate","買方承受日期"),f("settlement","押租金移交或結算方式","textarea",[],true)], template:"本標的目前出租予{tenant}，租期至{endDate}，每月租金及押租金分別為新臺幣{rent}元及{deposit}元。雙方約定自{startDate}起由買方依經相關當事人確認之內容處理後續租賃關係，賣方並將押租金依{settlement}移交或結算。" },
+        { id:"renew", label:"換約", fields:[f("party","協同換約者","select",["買方","賣方","雙方"]),f("deadline","期限"),f("handling","原租約、押租金、租金及水電處理","textarea",[],true)], template:"雙方知悉本標的目前有租賃關係，並約定由{party}協同承租人於{deadline}前完成新租約簽訂或換約；原租約、押租金、租金及水電費依{handling}處理。" }
+      ]},
+      { id:"H05", title:"國有基地出租、仁愛之家、地上權及對外通行道路持分", risk:"高", topics:[
+        { id:"baseRight", label:"特殊基地權利", fields:[f("type","權利類型","select",["國有基地出租","仁愛之家","地上權","其他"]),f("owner","基地所有權人或權利人"),f("terms","來源文件、期間、租金及承受條件","textarea",[],true),f("party","辦理人"),f("deadline","期限"),f("action","申請、同意、換約或承受方式","textarea",[],true)], template:"本標的建物坐落基地涉及{type}，基地所有權人或相關權利人為{owner}，權利來源文件、期間、租金或費用及承受條件為{terms}。雙方約定由{party}於{deadline}前完成{action}，未經文件確認之法律效果不由題庫預設。" },
+        { id:"roadShare", label:"對外通行道路持分", fields:[f("landNo","道路地號"),f("share","應有部分比例"),f("handling","移轉、價金、文件及通知同意事項","textarea",[],true)], template:"本件買賣另包含基地對外通行道路之土地持分，地號為{landNo}，應有部分為{share}。雙方就該道路持分之移轉、價金、應備文件及通知或同意事項約定為{handling}。" }
+      ]},
+      { id:"H06", title:"繼承及權狀補發", risk:"高", topics:[
+        { id:"inheritance", label:"繼承案件", fields:[f("matter","繼承事項"),f("decedent","被繼承人"),f("status","繼承人及登記情形","textarea",[],true),f("party","辦理人"),f("deadline","期限")], template:"本標的目前涉及{matter}，被繼承人為{decedent}，繼承人及目前登記情形為{status}。雙方約定由{party}於{deadline}前完成繼承登記及所需文件補正，完成後再依契約約定辦理產權移轉。" },
+        { id:"deed", label:"權狀補發", fields:[f("target","權狀種類","select",["土地","建物","土地及建物"]),f("reason","原因","select",["遺失","毀損","其他"]),f("party","辦理人"),f("deadline","期限"),f("handling","補發程序及費用負擔","textarea",[],true)], template:"本標的之{target}所有權狀因{reason}需辦理相關程序，由{party}於{deadline}前完成補發或其他處理，應備文件與費用負擔依{handling}辦理。" }
+      ]},
+      { id:"H07", title:"貸款條件及解約但書", risk:"高", topics:[
+        { id:"loan", label:"貸款條件", fields:[f("bank","金融機構"),f("amount","最低貸款金額"),f("ratio","最低核貸成數"),f("deadline","買方提供資料期限"),f("notice","通知期限及方式"),f("handling","未達條件時處理","textarea",[],true)], template:"買方預計以本標的向{bank}申請貸款，雙方約定貸款金額至少新臺幣{amount}元或核貸成數至少{ratio}。買方應於{deadline}前依金融機構要求提供資料；如核貸未達條件，應於{notice}通知，並依{handling}辦理。" },
+        { id:"fault", label:"歸責原因區分", fields:[f("rule","歸責原因判斷方式","textarea",[],true),f("handling","契約、價金及費用處理","textarea",[],true)], template:"貸款未達約定條件時，雙方是否區分因買方信用、負債、資料不全、標的估價或其他原因所致，依{rule}判斷；契約、價金及已支出費用之處理方式為{handling}。" }
+      ]},
+      { id:"H08", title:"代理授權", risk:"高", topics:[
+        { id:"authority", label:"代理授權", fields:[f("side","當事人","select",["買方","賣方"]),f("name","當事人名稱"),f("entity","身分類型","select",["個人","公司","社團法人","其他"]),f("agent","代理或代表人"),f("role","代理身分","select",["法定代表人","代理人","受任人","其他"]),f("scope","授權辦理事項"),f("conditions","合法授權條件","textarea",[],true),f("deadline","文件提出期限"),f("documents","應提出文件"),f("before","授權取得前得辦事項"),f("failure","授權不足或無效之處理","textarea",[],true)], template:"本契約之{side}{name}為{entity}，由{agent}以{role}身分簽訂及辦理{scope}事項。其合法授權應符合{conditions}條件，並於{deadline}前提出{documents}。合法授權取得前得辦理之事項為{before}；期限內未取得合法授權、授權範圍不足、授權文件無效或內容不符時，契約效力、後續履行及已付款項依{failure}處理。" }
+      ]},
+      { id:"H09", title:"非自然身故、海砂屋、輻射屋及氯離子", risk:"最高", topics:[
+        { id:"death", label:"非自然身故", fields:[f("time","發生時間"),f("location","發生位置"),f("event","具體情形"),f("agreement","其他約定","textarea",[],true)], template:"賣方就其知悉範圍告知買方，本標的曾於{time}在{location}發生{event}；買方已於簽約前知悉前述事項，雙方其他約定為{agreement}。" },
+        { id:"seaSand", label:"海砂屋或相關檢測", fields:[f("status","資料或檢測狀態","select",["已有檢測資料","由當事人於期限前辦理檢測","其他"]),f("result","檢測單位、日期、範圍及結果","textarea",[],true),f("handling","再檢測、費用及結果後處理","textarea",[],true)], template:"本標的目前{status}，檢測單位、日期、範圍及結果為{result}。買方已審閱相關資料，雙方就再檢測、費用及結果後處理約定為{handling}。" },
+        { id:"radiation", label:"輻射屋", fields:[f("status","檢測或查詢資料"),f("party","辦理人"),f("deadline","期限"),f("action","查詢、檢測或文件提供"),f("handling","結果及後續處理","textarea",[],true)], template:"本標的之輻射檢測或查詢資料情形為{status}。雙方約定由{party}於{deadline}前完成{action}，結果及後續處理方式為{handling}。" },
+        { id:"chloride", label:"氯離子", fields:[f("document","現有檢測文件"),f("result","檢測單位、日期、範圍及結果","textarea",[],true),f("handling","再檢測、費用及結果後處理","textarea",[],true)], template:"本標的混凝土氯離子檢測之現有資料為{document}，檢測單位、日期、範圍及結果為{result}。雙方已確認前述資料，並約定{handling}。" }
+      ]},
+      { id:"H10", title:"法定空地註記", risk:"最高", topics:[
+        { id:"openSpace", label:"法定空地註記", fields:[f("target","登記標的"),f("note","註記全文或摘要","textarea",[],true),f("registration","登記日期及字號"),f("document","相關文件"),f("party","辦理人"),f("deadline","期限"),f("action","查明、申請或處理方式","textarea",[],true),f("effect","交易及後續使用處理","textarea",[],true)], template:"本標的之{target}標示部有{note}，登記日期及字號為{registration}，相關文件為{document}。買方已於簽約前審閱前述資料；雙方約定由{party}於{deadline}前完成{action}，對交易及後續使用之處理方式為{effect}。" }
+      ]},
+      { id:"H11", title:"預告登記、抵押權、信託及其他產權限制", risk:"最高", topics:[
+        { id:"notice", label:"預告登記", fields:[f("content","權利人及登記內容"),f("party","辦理人"),f("deadline","期限"),f("action","塗銷、同意或其他處理")], template:"本標的目前有預告登記，權利人及登記內容為{content}。雙方約定由{party}於{deadline}前完成{action}，完成後再依約辦理產權移轉。" },
+        { id:"noticeMortgage", label:"預告登記加抵押權", fields:[f("content","權利人及登記內容","textarea",[],true),f("party","辦理人"),f("deadline","期限"),f("action","具體處理"),f("document","取得文件")], template:"本標的同時有預告登記及抵押權，預告登記權利人、抵押權人與各登記內容為{content}。由{party}於{deadline}前完成{action}，並取得{document}後辦理產權移轉。" },
+        { id:"privateMortgage", label:"私人抵押權", fields:[f("creditor","私人抵押權人"),f("content","擔保金額及內容"),f("party","辦理人"),f("deadline","期限"),f("action","清償塗銷或其他處理"),f("fee","費用負擔")], template:"本標的設定抵押權予{creditor}，擔保金額及內容為{content}。雙方約定由{party}於{deadline}前完成{action}，並取得登記所需文件，費用由{fee}負擔。" },
+        { id:"trust", label:"信託", fields:[f("content","受託人及信託登記內容","textarea",[],true),f("party","辦理人"),f("deadline","期限")], template:"本標的目前登記為信託財產，受託人及信託登記內容為{content}。雙方約定由{party}於{deadline}前完成本件交易所需之信託處理、文件提供及產權移轉程序。" },
+        { id:"seizure", label:"假扣押或假處分", fields:[f("type","登記類型","select",["假扣押","假處分"]),f("content","權利人、日期字號及內容","textarea",[],true),f("party","辦理人"),f("deadline","期限"),f("action","具體處理")], template:"本標的目前有{type}登記，權利人、日期字號及內容為{content}。雙方約定由{party}於{deadline}前完成{action}，完成後再依約辦理產權移轉。" },
+        { id:"litigation", label:"訴訟繫屬相關註記", fields:[f("content","訴訟或註記內容","textarea",[],true),f("party","辦理人"),f("deadline","期限"),f("action","查明或文件處理"),f("handling","後續辦理方式")], template:"本標的登記資料有訴訟或訴訟繫屬相關註記，其內容為{content}。雙方約定由{party}於{deadline}前完成{action}，後續依{handling}辦理。" },
+        { id:"housingLoan", label:"國宅貸款", fields:[f("content","貸款或登記事項"),f("party","辦理人"),f("deadline","期限"),f("action","具體處理"),f("fee","費用負擔")], template:"本標的涉及國宅貸款或相關登記事項，目前情形為{content}。雙方約定由{party}於{deadline}前完成{action}，相關費用由{fee}負擔。" }
+      ]},
+      { id:"H12", title:"公司或法人處分程序及公司設立", risk:"高", topics:[
+        { id:"company", label:"公司或法人程序及公司設立", fields:[f("side","當事人","select",["買方","賣方"]),f("name","公司或法人名稱"),f("actionType","交易行為","select",["處分","取得"]),f("procedure","應完成之內部程序","textarea",[],true),f("completed","已完成程序及文件","textarea",[],true),f("deadline","補正期限"),f("before","完成前得辦事項"),f("failure","未完成或文件無效之處理","textarea",[],true),f("registration","公司登記、設址或使用處理","textarea",[],true),f("usageFailure","不能設立、登記或使用時處理","textarea",[],true)], template:"本件{side}{name}為公司或法人，其就本件不動產{actionType}應完成之內部權責程序為{procedure}，現已完成並提出{completed}；尚未完成部分應於{deadline}前補正。完成前得辦理之事項為{before}；未於期限內完成、決議內容不符、授權不足或文件無效時，契約效力、後續履行及已付款項依{failure}處理。其後，就本標的現有公司或法人登記，以及買方預定公司設立、登記、設址或使用，雙方約定{registration}。如不能辦理公司設立、登記、設址或預定使用，契約及相關款項依{usageFailure}處理。" }
+      ]}
+    ];
+    const DATE_FIELDS = {
+  "H01.repair": [
+    "deadline"
+  ],
+  "H02.utilities": [
+    "deadline"
+  ],
+  "H02.equipment": [
+    "deadline"
+  ],
+  "H02.sewer": [
+    "deadline"
+  ],
+  "H03.early": [
+    "date"
+  ],
+  "H03.occupied": [
+    "deadline"
+  ],
+  "H04.terminate": [
+    "deadline"
+  ],
+  "H04.assume": [
+    "endDate",
+    "startDate"
+  ],
+  "H04.renew": [
+    "deadline"
+  ],
+  "H05.baseRight": [
+    "deadline"
+  ],
+  "H06.inheritance": [
+    "deadline"
+  ],
+  "H06.deed": [
+    "deadline"
+  ],
+  "H07.loan": [
+    "deadline"
+  ],
+  "H08.authority": [
+    "deadline"
+  ],
+  "H09.death": [
+    "time"
+  ],
+  "H09.radiation": [
+    "deadline"
+  ],
+  "H10.openSpace": [
+    "deadline"
+  ],
+  "H11.notice": [
+    "deadline"
+  ],
+  "H11.noticeMortgage": [
+    "deadline"
+  ],
+  "H11.privateMortgage": [
+    "deadline"
+  ],
+  "H11.trust": [
+    "deadline"
+  ],
+  "H11.seizure": [
+    "deadline"
+  ],
+  "H11.litigation": [
+    "deadline"
+  ],
+  "H11.housingLoan": [
+    "deadline"
+  ],
+  "H12.company": [
+    "deadline"
+  ]
+};
+    questions.forEach(question=>question.topics.forEach(topic=>topic.fields.forEach(field=>{if((DATE_FIELDS[`${question.id}.${topic.id}`] || []).includes(field.key)){field.type="date";field.placeholder="";}})));
+
+    const loanTopic=questions.find(q=>q.id==="H07").topics.find(t=>t.id==="loan");
+    loanTopic.fields.splice(loanTopic.fields.findIndex(field=>field.key==="notice"),0,f("noticeDate","通知期限","date"));
+    loanTopic.fields.find(field=>field.key==="notice").label="通知方式";
+    loanTopic.template=loanTopic.template.replace("{notice}","{noticeDate}前以{notice}");
+    const registrationTopic=questions.find(q=>q.id==="H10").topics[0];
+    registrationTopic.fields.splice(registrationTopic.fields.findIndex(field=>field.key==="registration"),0,f("registrationDate","登記日期","date"));
+    registrationTopic.fields.find(field=>field.key==="registration").label="登記字號";
+    registrationTopic.template=registrationTopic.template.replace("{registration}","{registrationDate}、字號{registration}");
+    ["seaSand","chloride"].forEach(id=>{
+      const topic=questions.find(q=>q.id==="H09").topics.find(t=>t.id===id);
+      topic.fields.splice(topic.fields.findIndex(field=>field.key==="result"),0,f("reportDate","檢測日期","date"));
+      topic.fields.find(field=>field.key==="result").label="檢測單位、範圍及結果";
+      topic.template=topic.template.replace("{result}","檢測日期{reportDate}，{result}");
+    });
+    const seizureTopic=questions.find(q=>q.id==="H11").topics.find(t=>t.id==="seizure");
+    seizureTopic.fields.splice(seizureTopic.fields.findIndex(field=>field.key==="content"),0,f("registrationDate","登記日期","date"));
+    seizureTopic.fields.find(field=>field.key==="content").label="權利人、字號及內容";
+    seizureTopic.template=seizureTopic.template.replace("{content}","登記日期{registrationDate}，{content}");
+
+    const state = { selected:{}, values:{}, excluded:{}, drafts:{}, manual:[], order:[], activePanel:"pdf" };
+    const $ = (id) => document.getElementById(id);
+    const esc = (value) => String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    const keyOf = (questionId,topicId,fieldKey) => `${questionId}.${topicId}.${fieldKey}`;
+    const topicKey = (questionId,topicId) => `${questionId}.${topicId}`;
+    const isSelected = (questionId,topicId) => Boolean(state.selected[topicKey(questionId,topicId)]);
+    function isoDate(value) {
+      const text=String(value || "").trim().replace(/^民國/,""),match=text.match(/^(\d{2,4})年(\d{1,2})月(\d{1,2})日(?:\s*(\d{1,2})[時:](\d{1,2})分?)?$/);
+      if(!match) return text;
+      const year=Number(match[1])<1912?Number(match[1])+1911:Number(match[1]);
+      const date=`${year}-${match[2].padStart(2,"0")}-${match[3].padStart(2,"0")}`;
+      return match[4]?`${date}T${match[4].padStart(2,"0")}:${match[5].padStart(2,"0")}`:date;
+    }
+    function rocDate(value) {
+      const match=String(value).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$/);
+      if(!match) return value;
+      const date=`${Number(match[1])-1911}年${Number(match[2])}月${Number(match[3])}日`;
+      return match[4]?`${date}${Number(match[4])}時${Number(match[5])}分`:date;
+    }
+    function fieldVisible(question,topic,field) {
+      const value=key=>state.values[keyOf(question.id,topic.id,key)] || "";
+      if(field.when && value(field.when.key)!==field.when.equals) return false;
+      if(field.dateAlternative && value(field.dateAlternative.control)===field.dateAlternative.equals) return false;
+      return true;
+    }
+    function fieldHtml(question,topic,field) {
+      if(!fieldVisible(question,topic,field)) return "";
+      const key=keyOf(question.id,topic.id,field.key), value=state.values[key] || "";
+      const cls=field.wide ? "field wide" : "field";
+      if(field.type==="select") { const otherKey=keyOf(question.id,topic.id,`${field.key}Other`), otherValue=state.values[otherKey] || ""; return `<label class="${cls}">${esc(field.label)}<select data-value-key="${esc(key)}" data-other-select="${field.options.includes("其他")?"true":"false"}"><option value="">請選擇</option>${field.options.map(o=>`<option${o===value?" selected":""}>${esc(o)}</option>`).join("")}</select></label>${field.options.includes("其他")&&value==="其他"?`<label class="${cls}">${esc(field.label)}－其他說明<input type="text" data-value-key="${esc(otherKey)}" value="${esc(otherValue)}" placeholder="請填寫其他內容" /></label>`:""}`; }
+      if(field.type==="textarea") return `<label class="${cls}">${esc(field.label)}<textarea data-value-key="${esc(key)}" placeholder="${esc(field.placeholder)}">${esc(value)}</textarea></label>`;
+      return `<label class="${cls}">${esc(field.label)}<input type="${field.type}"${field.type==="date"?' min="1912-01-01"':field.type==="datetime-local"?' min="1912-01-01T00:00"':""} data-value-key="${esc(key)}" value="${esc(value)}" placeholder="${esc(field.placeholder)}" /></label>`;
+    }
+    function generatedTopic(question,topic) {
+      const missing=[];
+      const text=topic.template.replace(/\{(\w+)\}/g,(_,key)=>{
+        let actualKey=key,field=topic.fields.find(item=>item.key===key);
+        if(field?.dateAlternative && state.values[keyOf(question.id,topic.id,field.dateAlternative.control)]===field.dateAlternative.equals){actualKey=field.dateAlternative.key;field=topic.fields.find(item=>item.key===actualKey);}
+        let value=(state.values[keyOf(question.id,topic.id,actualKey)] || "").trim();
+        if(["date","datetime-local"].includes(field?.type) && value) value=rocDate(value);
+        if(field?.type==="select" && field.options.includes("其他") && value==="其他") { const otherValue=(state.values[keyOf(question.id,topic.id,`${key}Other`)] || "").trim(); if(!otherValue){ missing.push(`${question.id} ${topic.label}：${field.label}－其他說明`); return "【其他說明尚未填寫】"; } return otherValue; }
+        if(!value){ const label=field?.label || key; missing.push(`${question.id} ${topic.label}：${label}`); return `【${label}尚未填寫】`; }
+        return value;
+      });
+      return { text, missing };
+    }
+    function renderQuestions() {
+      $("questionList").innerHTML=questions.map((question,index)=>{
+        if(state.excluded[question.id]) return `<article class="question excluded"><div class="question-head"><div><h3 class="question-title">${question.id}　${esc(question.title)}</h3></div><button class="exclude-btn" type="button" data-restore="${question.id}" title="恢復問題">＋</button></div><div class="excluded-note">此題已排除；若與其他答案有關聯，右側仍可能顯示風險提醒。</div></article>`;
+        const details=question.topics.filter(topic=>isSelected(question.id,topic.id)).map(topic=>{ const preview=generatedTopic(question,topic).text; return `<section class="topic-detail"><h4>${esc(topic.label)}</h4><div class="topic-fields">${topic.fields.map(field=>fieldHtml(question,topic,field)).join("")}</div><div class="inline-preview"><div class="comparison-text">${esc(preview)}</div></div></section>`; }).join("");
+        return `<article class="question"><div class="question-head"><div><h3 class="question-title">${question.id}　${esc(question.title)}</h3><span class="risk-tag ${question.risk!=="一般"?"high":""}">${esc(question.risk)}風險</span></div><button class="exclude-btn" type="button" data-exclude="${question.id}" title="排除此題">×</button></div><div class="question-body"><div class="topic-options">${question.topics.map(topic=>`<label class="check-option"><input type="checkbox" data-topic="${question.id}.${topic.id}"${isSelected(question.id,topic.id)?" checked":""}/><span>${esc(topic.label)}</span></label>`).join("")}</div>${details}</div></article>`;
+      }).join("");
+      document.querySelectorAll("[data-topic]").forEach(input=>input.addEventListener("change",()=>{ state.selected[input.dataset.topic]=input.checked; if(!input.checked) delete state.drafts[input.dataset.topic]; renderQuestions(); updateOutput(); }));
+      document.querySelectorAll("[data-value-key]").forEach(input=>{ const update=()=>{ state.values[input.dataset.valueKey]=input.value; const parts=input.dataset.valueKey.split("."); const question=questions.find(q=>q.id===parts[0]); const topic=question.topics.find(t=>t.id===parts[1]); if(input.tagName==="SELECT"){ renderQuestions(); updateOutput(); return; } const preview=input.closest(".topic-detail").querySelector(".inline-preview"); preview.innerHTML=`<div class="comparison-text">${esc(generatedTopic(question,topic).text)}</div>`; updateOutput(); }; if(input.tagName==="SELECT") input.addEventListener("change",update); else input.addEventListener("input",update); });
+      document.querySelectorAll("[data-exclude]").forEach(button=>button.addEventListener("click",()=>{ state.excluded[button.dataset.exclude]=true; renderQuestions(); updateOutput(); }));
+      document.querySelectorAll("[data-restore]").forEach(button=>button.addEventListener("click",()=>{ delete state.excluded[button.dataset.restore]; renderQuestions(); updateOutput(); }));
+    }
+    function buildResult() {
+      const generated=[...FIXED_CLAUSES], missing=[], risks=[];
+      questions.forEach(question=>{
+        if(state.excluded[question.id]) return;
+        question.topics.forEach(topic=>{
+          if(!isSelected(question.id,topic.id)) return;
+          const result=generatedTopic(question,topic); generated.push({id:topicKey(question.id,topic.id),text:result.text}); missing.push(...result.missing);
+          if(question.risk==="最高") risks.push({level:"danger",text:`${question.id} ${topic.label}屬最高風險事項，應由地政士確認文件、責任及未完成時的法律效果。`});
+          else if(question.risk==="高") risks.push({level:"warn",text:`${question.id} ${topic.label}應確認期限、責任、費用及佐證文件。`});
+        });
+      });
+      if(state.excluded.H08 && (isSelected("H12","company"))) risks.push({level:"warn",text:"H08 代理授權已排除，但 H12 涉及公司或法人程序，仍應確認代表權與授權文件。"});
+      if(state.excluded.H11 && (isSelected("H06","inheritance") || isSelected("H05","baseRight"))) risks.push({level:"danger",text:"H11 產權限制已排除，但本案涉及繼承或特殊基地權利，仍應重新核對登記限制。"});
+      const system=generated.map(item=>{
+        const existing=state.drafts[item.id];
+        if(!existing) state.drafts[item.id]={generated:item.text,value:item.text,dirty:false};
+        else if(!existing.dirty){ existing.generated=item.text; existing.value=item.text; }
+        else existing.generated=item.text;
+        return {id:item.id,text:state.drafts[item.id].value,dirty:state.drafts[item.id].dirty,type:"system"};
+      });
+      const active=new Set(generated.map(item=>item.id)); Object.keys(state.drafts).forEach(id=>{ if(!active.has(id)) delete state.drafts[id]; });
+      const manual=state.manual.map(item=>({id:item.id,text:item.text,dirty:true,type:"manual"}));
+      const allItems=[...system,...manual], validIds=new Set(allItems.map(item=>item.id));
+      state.order=state.order.filter(id=>validIds.has(id));
+      system.forEach((item,systemIndex)=>{
+        if(state.order.includes(item.id)) return;
+        const previous=system.slice(0,systemIndex).map(entry=>entry.id).reverse().find(id=>state.order.includes(id));
+        if(previous) state.order.splice(state.order.indexOf(previous)+1,0,item.id);
+        else state.order.unshift(item.id);
+      });
+      manual.forEach(item=>{ if(!state.order.includes(item.id)) state.order.push(item.id); });
+      const byId=new Map(allItems.map(item=>[item.id,item]));
+      return {items:state.order.map(id=>byId.get(id)).filter(Boolean),missing:[...new Set(missing)],risks:risks.filter((item,index,array)=>array.findIndex(other=>other.text===item.text)===index)};
+    }
+    function renderClauses(items) {
+      return `<div class="clause-list">${items.map((item,index)=>`<div class="clause"><div class="clause-head"><span>${index+1}、特約條文</span><div class="clause-actions">${item.type==="manual"?`<span class="manual-badge added">人為新增</span><button class="btn secondary small" data-move-up="${item.id}" type="button" title="上移"${index===0?" disabled":""}>↑</button><button class="btn secondary small" data-move-down="${item.id}" type="button" title="下移"${index===items.length-1?" disabled":""}>↓</button><button class="btn danger small" data-delete-manual="${item.id}" type="button">刪除</button>`:`<span class="manual-badge" data-manual-badge="${item.id}"${item.dirty?"":" hidden"}>人為修改</span><button class="btn secondary small" data-reset-system="${item.id}" type="button">恢復系統文字</button>`}</div></div><textarea data-clause-id="${item.id}" data-clause-type="${item.type}">${esc(item.text)}</textarea></div>`).join("")}</div>`;
+    }
+    function bindClauseActions() {
+      document.querySelectorAll("[data-clause-id]").forEach(field=>field.addEventListener("input",()=>{ const id=field.dataset.clauseId; if(field.dataset.clauseType==="manual"){ const item=state.manual.find(entry=>entry.id===id); if(item) item.text=field.value; } else { const draft=state.drafts[id]; if(!draft) return; draft.value=field.value; draft.dirty=field.value!==draft.generated; const badge=document.querySelector(`[data-manual-badge="${id}"]`); if(badge) badge.hidden=!draft.dirty; } }));
+      document.querySelectorAll("[data-reset-system]").forEach(button=>button.addEventListener("click",()=>{ const draft=state.drafts[button.dataset.resetSystem]; if(draft){ draft.value=draft.generated; draft.dirty=false; updateOutput(); } }));
+      document.querySelectorAll("[data-delete-manual]").forEach(button=>button.addEventListener("click",()=>{ const id=button.dataset.deleteManual; state.manual=state.manual.filter(item=>item.id!==id); state.order=state.order.filter(itemId=>itemId!==id); updateOutput(); }));
+      const move=(id,direction)=>{ const index=state.order.indexOf(id), target=index+direction; if(index<0||target<0||target>=state.order.length) return; [state.order[index],state.order[target]]=[state.order[target],state.order[index]]; updateOutput(); };
+      document.querySelectorAll("[data-move-up]").forEach(button=>button.addEventListener("click",()=>move(button.dataset.moveUp,-1)));
+      document.querySelectorAll("[data-move-down]").forEach(button=>button.addEventListener("click",()=>move(button.dataset.moveDown,1)));
+    }
+    function updateOutput() {
+      const result=buildResult(); $("clauseOutput").innerHTML=renderClauses(result.items); bindClauseActions();
+      $("riskOutput").innerHTML=result.risks.length?`<ul class="risk-list">${result.risks.map(item=>`<li class="${item.level}">${esc(item.text)}</li>`).join("")}</ul>`:`<p class="empty-state">目前沒有高風險提醒。</p>`;
+      $("missingOutput").innerHTML=result.missing.length?`<ul class="missing-list">${result.missing.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>`:`<p class="empty-state">目前沒有待補資料。</p>`;
+      $("clauseCount").textContent=`${result.items.length} 條`; $("riskCount").textContent=`${result.risks.length} 項`; $("missingCount").textContent=`${result.missing.length} 項`;
+    }
+    function addManualClause() { state.manual.push({id:`manual-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,text:""}); updateOutput(); const fields=document.querySelectorAll('[data-clause-type="manual"]'); fields[fields.length-1]?.focus(); }
+    function switchPanel(panel) { state.activePanel=panel; document.querySelectorAll(".side-tab").forEach(button=>button.classList.toggle("active",button.dataset.panel===panel)); document.querySelectorAll("[data-panel-content]").forEach(content=>content.hidden=content.dataset.panelContent!==panel); }
+    function plainText() { const items=buildResult().items; return items.map((item,index)=>`${index+1}、${item.text}`).join("\n"); }
+    async function copyClauses() { const text=plainText(); try { await navigator.clipboard.writeText(text); } catch { const area=document.createElement("textarea"); area.value=text; document.body.appendChild(area); area.select(); document.execCommand("copy"); area.remove(); } showToast("已複製特約草稿"); }
+    function parseRocDate(value) { const text=String(value||"").trim(); const roc=text.match(/(\d{2,3})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})/); if(roc) return {year:roc[1],month:roc[2],day:roc[3]}; const numeric=text.match(/(\d{2,4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})/); if(numeric){ const year=Number(numeric[1]); return {year:String(year>1911?year-1911:year),month:numeric[2],day:numeric[3]}; } return {year:"　　",month:"　",day:"　"}; }
+    function splitClauses(clauses) {
+      // Measure with the actual print rules, isolated from the visible application.
+      const host=document.createElement("div");
+      host.style.cssText="position:fixed;left:-10000px;top:0;visibility:hidden;pointer-events:none";
+      const shadow=host.attachShadow({mode:"open"});
+      const styles=[...document.querySelectorAll("style")].map(style=>style.textContent.replace(/@media\s+print\s*\{/g,"@media all {")).join("\n");
+      shadow.innerHTML=`<style>${styles}</style><div class="print-area"><section class="contract-page"><main class="contract-content"><h1 class="contract-title">特約事項：</h1><ol class="contract-clauses"></ol></main>${signatureHtml()}</section></div>`;
+      document.body.appendChild(host);
+      try {
+        const page=shadow.querySelector(".contract-page"),content=shadow.querySelector(".contract-content"),list=shadow.querySelector("ol"),signatures=shadow.querySelector(".contract-signatures");
+        let remainingSpace=0;
+        const fits=(entries,last)=>{
+          page.classList.toggle("is-last",last);
+          list.replaceChildren(...entries.map(entry=>{
+            const li=document.createElement("li"); li.value=entry.number; li.textContent=entry.text;
+            li.classList.toggle("is-continuation",!!entry.continued); return li;
+          }));
+          const bottom=list.lastElementChild?.getBoundingClientRect().bottom||list.getBoundingClientRect().top;
+          const limit=last?Math.min(content.getBoundingClientRect().bottom,signatures.getBoundingClientRect().top-8*96/25.4):content.getBoundingClientRect().bottom;
+          remainingSpace=limit-bottom;
+          return remainingSpace>=2;
+        };
+        const pending=clauses.map((text,index)=>({text:String(text),number:index+1,continued:false})),pages=[];
+        while(pending.length){
+          if(fits(pending,true)){pages.push(pending.splice(0));break;}
+          const current=[];
+          while(pending.length&&fits([...current,pending[0]],false)) current.push(pending.shift());
+          if(pending.length){
+            // Fill remaining space; continue a split clause without renumbering it.
+            const entry=pending[0],characters=Array.from(entry.text);
+            let low=1,high=characters.length,best=0;
+            while(low<=high){
+              const middle=Math.floor((low+high)/2);
+              if(fits([...current,{...entry,text:characters.slice(0,middle).join("")}],false)){best=middle;low=middle+1;}else high=middle-1;
+            }
+            // Avoid leaving a lone punctuation mark or one-line tail on the next page.
+            if(best>0&&best<characters.length){
+              fits([{...entry,text:characters.slice(best).join("")}],false);
+              const lineHeight=parseFloat(getComputedStyle(list).lineHeight);
+              if(list.lastElementChild.getBoundingClientRect().height<2*lineHeight){
+                let left=1,right=best,safe=0;
+                while(left<=right){
+                  const middle=Math.floor((left+right)/2);
+                  fits([{...entry,text:characters.slice(middle).join("")}],false);
+                  if(list.lastElementChild.getBoundingClientRect().height>=2*lineHeight){safe=middle;left=middle+1;}else right=middle-1;
+                }
+                best=safe;
+              }
+            }
+            if(best>0&&/^[。；，、：！？.!?;:,）】」』]/u.test(characters.slice(best).join("").trimStart())) best=Math.max(1,best-24);
+            if(best){
+              current.push({...entry,text:characters.slice(0,best).join("")});
+              pending[0]={...entry,text:characters.slice(best).join(""),continued:true};
+            } else if(!current.length) throw new Error("PDF 條文無法排入頁面");
+          }
+          // Keep the preceding page full; move only a short final clause or tail.
+          if(!pending.length&&!fits(current,true)){
+            const entry=current.at(-1),lineHeight=parseFloat(getComputedStyle(list).lineHeight);
+            const wholeFits=fits([entry],true),entryHeight=list.lastElementChild.getBoundingClientRect().height;
+            if(current.length>1&&wholeFits&&entryHeight<=5*lineHeight){
+              pages.push(current.slice(0,-1),[entry]);break;
+            }
+            const characters=Array.from(entry.text);
+            let low=1,high=characters.length-1,best=null;
+            while(low<=high){
+              const middle=Math.floor((low+high)/2);
+              const cut=/^[。；，、：！？.!?;:,）】」』]/u.test(characters.slice(middle).join("").trimStart())?Math.max(1,middle-24):middle;
+              const prefix=[...current.slice(0,-1),{...entry,text:characters.slice(0,cut).join("")}];
+              const suffix=[{...entry,text:characters.slice(cut).join(""),continued:true}];
+              const prefixFits=fits(prefix,false),suffixFits=fits(suffix,true);
+              const tailHeight=list.lastElementChild.getBoundingClientRect().height;
+              if(prefixFits&&suffixFits&&tailHeight>=3*lineHeight) best={prefix,suffix};
+              if(tailHeight>=3*lineHeight) low=middle+1; else high=middle-1;
+            }
+            if(!best) throw new Error("PDF 簽章頁無法完成分頁");
+            pages.push(best.prefix,best.suffix);break;
+          }
+          pages.push(current);
+        }
+        return pages.length?pages:[[]];
+      } finally { host.remove(); }
+    }
+    function signatureHtml() {
+      const date=parseRocDate(document.querySelector('[data-case="contractDate"]').value);
+      return `<footer class="contract-signatures"><div class="signature-row"><span class="signature-label">買方簽章：</span><span class="signature-line"></span><span class="signature-seal"></span></div><div class="signature-row"><span class="signature-label">賣方簽章：</span><span class="signature-line"></span><span class="signature-seal"></span></div><div class="contract-date"><span>中華民國</span><span>${esc(date.year)} 年</span><span>${esc(date.month)} 月</span><span>${esc(date.day)} 日</span></div></footer>`;
+    }
+    function printDocument(items) {
+      const contractNo=document.querySelector('[data-case="contractNo"]').value.trim(),pages=splitClauses(items.map(item=>item.text));
+      return pages.map((clauses,pageIndex)=>{
+        const last=pageIndex===pages.length-1;
+        return `<section class="contract-page${last?" is-last":""}"><header class="contract-header"><img class="contract-brand" src="assets/yiqing-header.png" alt="宜慶地政 服務專線 06-2951356"/><div class="contract-number">契約書編號：<span class="contract-number-value">${esc(contractNo)}</span></div></header><img class="contract-watermark" src="assets/yiqing-watermark.png" alt=""/><main class="contract-content"><h1 class="contract-title">特約事項：</h1><ol class="contract-clauses">${clauses.map(entry=>`<li value="${entry.number}"${entry.continued?' class="is-continuation"':""}>${esc(entry.text)}</li>`).join("")}</ol></main>${last?signatureHtml():""}</section>`;
+      }).join("");
+    }
+    async function waitForPrintLayout(container) {
+      const images=[...container.querySelectorAll("img")];
+      await Promise.all(images.map(async image=>{
+        if(!image.complete) await new Promise(resolve=>{ image.addEventListener("load",resolve,{once:true}); image.addEventListener("error",resolve,{once:true}); });
+        if(image.decode) { try { await image.decode(); } catch {} }
+      }));
+      if(document.fonts?.ready) await document.fonts.ready;
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    }
+    async function exportPdf() { const result=buildResult(),area=$("printArea"); showToast("正在準備 PDF 格式"); if(document.fonts?.ready) await document.fonts.ready; area.innerHTML=printDocument(result.items); await waitForPrintLayout(area); showToast("請在列印視窗選擇另存為 PDF"); window.print(); }
+    function showToast(text) { const toast=$("toast"); toast.textContent=text; toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>toast.classList.remove("show"),1800); }
+    function resetAll() { state.selected={}; state.values={}; state.excluded={}; state.drafts={}; state.manual=[]; state.order=[]; document.querySelectorAll("[data-case]").forEach(input=>input.value=""); $("printArea").innerHTML=""; renderQuestions(); updateOutput(); switchPanel("pdf"); showToast("已恢復初始狀態"); }
+    function confirmReset() { if(window.confirm("確定要恢復初始狀態嗎？目前填寫的答案、人工條文及修改內容都會被清除，且無法復原。")) resetAll(); }
+    function loadSample() {
+      resetAll(); document.querySelector('[data-case="contractNo"]').value="1151008001"; document.querySelector('[data-case="contractDate"]').value="115年10月8日";
+      state.selected["H01.repair"]=true; state.values["H01.repair.location"]="二樓後側房間天花板"; state.values["H01.repair.issue"]="雨天滲漏水"; state.values["H01.repair.party"]="賣方"; state.values["H01.repair.deadline"]="交屋前"; state.values["H01.repair.repair"]="完成防水修繕"; state.values["H01.repair.warranty"]="原施工廠商保固一年";
+      state.selected["H02.water"]=true; state.values["H02.water.source"]="地下水";
+      state.selected["H04.terminate"]=true; state.values["H04.terminate.tenant"]="現承租人"; state.values["H04.terminate.scope"]="全棟"; state.values["H04.terminate.deadline"]="交屋前"; state.values["H04.terminate.settlement"]="由賣方結清並返還押租金";
+      state.values["H01.repair.deadline"]="2026-11-30"; state.values["H04.terminate.deadline"]="2026-11-30";
+      questions.forEach(question=>question.topics.forEach(topic=>topic.fields.filter(field=>["date","datetime-local"].includes(field.type)).forEach(field=>{const key=keyOf(question.id,topic.id,field.key);if(state.values[key]) state.values[key]=isoDate(state.values[key]);})));
+      renderQuestions(); updateOutput(); showToast("已載入範例");
+    }
+    document.querySelectorAll(".side-tab").forEach(button=>button.addEventListener("click",()=>switchPanel(button.dataset.panel)));
+    document.querySelectorAll("[data-case]").forEach(input=>input.addEventListener("input",updateOutput));
+    $("addClauseBtn").addEventListener("click",addManualClause); $("copyBtn").addEventListener("click",copyClauses); $("downloadBtn").addEventListener("click",exportPdf); $("resetBtn").addEventListener("click",confirmReset); $("loadSampleBtn").addEventListener("click",loadSample);
+    renderQuestions(); updateOutput(); switchPanel("pdf");
+  </script>
+</body>
+</html>

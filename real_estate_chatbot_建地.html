@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>建地特約事項網頁demo</title>
+  <style>
+    :root {
+      --ink:#17211d; --muted:#68746e; --line:#d8dedb; --soft:#f5f7f6;
+      --green:#245c47; --green-2:#34745a; --amber:#a04b11; --amber-bg:#fff7ed;
+      --danger:#a72d2d; --white:#fff; --shadow:0 8px 24px rgba(25,43,35,.08);
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:#edf1ef; font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; letter-spacing:0; }
+    button,input,select,textarea { font:inherit; letter-spacing:0; }
+    button { cursor:pointer; }
+    body > header { min-height:64px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:16px; background:#fff; border-bottom:1px solid var(--line); }
+    .brand h1 { margin:0; font-size:20px; }
+    .brand span { display:block; margin-top:3px; color:var(--muted); font-size:12px; }
+    .header-actions,.clause-actions,.topic-actions { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+    .btn { min-height:36px; padding:7px 12px; border:1px solid transparent; border-radius:6px; background:var(--green); color:#fff; font-weight:700; }
+    .btn:hover { background:var(--green-2); }
+    .btn:disabled { opacity:.38; cursor:not-allowed; }
+    .btn.secondary { border-color:var(--line); background:#fff; color:var(--ink); }
+    .btn.danger { border-color:#e7b5b5; background:#fff; color:var(--danger); }
+    .btn.small { min-height:30px; padding:4px 8px; font-size:12px; }
+    .layout { display:grid; grid-template-columns:280px minmax(480px,1fr) minmax(360px,470px); min-height:calc(100vh - 64px); }
+    aside,main,.result-panel { min-width:0; padding:14px; }
+    aside { background:#f8faf9; border-right:1px solid var(--line); }
+    main { border-right:1px solid var(--line); }
+    .result-panel { background:#f8faf9; }
+    .side-tabs { display:grid; grid-template-columns:repeat(2,1fr); gap:4px; margin-bottom:12px; }
+    .side-tab { min-height:38px; padding:6px 4px; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--muted); font-size:12px; font-weight:700; }
+    .side-tab.active { border-color:var(--green); background:var(--green); color:#fff; }
+    .side-panel[hidden] { display:none; }
+    .section,.output-block { margin-bottom:12px; background:#fff; border:1px solid var(--line); border-radius:7px; box-shadow:var(--shadow); }
+    .section { padding:14px; }
+    .section-title,.output-title { margin:0; display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:15px; }
+    .section-subtitle { margin:7px 0 0; color:var(--muted); font-size:12px; line-height:1.6; }
+    .fields { display:grid; gap:10px; margin-top:12px; }
+    .field { display:grid; gap:5px; color:var(--muted); font-size:12px; font-weight:700; }
+    input,select,textarea { width:100%; border:1px solid #cbd3cf; border-radius:5px; background:#fff; color:var(--ink); padding:8px 9px; outline:none; }
+    input:focus,select:focus,textarea:focus { border-color:var(--green-2); box-shadow:0 0 0 2px rgba(52,116,90,.12); }
+    .question-list { display:grid; gap:12px; }
+    .question { background:#fff; border:1px solid var(--line); border-radius:7px; box-shadow:var(--shadow); overflow:hidden; }
+    .question-head { padding:13px 14px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); }
+    .question-title { margin:0; font-size:15px; line-height:1.5; }
+    .risk-tag,.tag { display:inline-flex; align-items:center; min-height:24px; padding:2px 7px; border-radius:4px; background:#edf5f1; color:var(--green); font-size:11px; font-weight:700; white-space:nowrap; }
+    .risk-tag.high { background:#fff0f0; color:var(--danger); }
+    .exclude-btn { width:30px; height:30px; padding:0; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--muted); font-size:19px; line-height:1; }
+    .question-body { padding:13px 14px; }
+    .topic-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .check-option { min-height:42px; padding:8px 9px; display:flex; align-items:flex-start; gap:8px; border:1px solid var(--line); border-radius:5px; background:var(--soft); font-size:13px; line-height:1.45; }
+    .check-option input { width:17px; height:17px; margin:1px 0 0; flex:0 0 auto; accent-color:var(--green); }
+    .topic-detail { margin-top:12px; padding:12px; border-left:3px solid var(--green-2); background:#f8faf9; }
+    .topic-detail h4 { margin:0 0 10px; font-size:14px; }
+    .topic-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+    .topic-fields .wide { grid-column:1/-1; }
+    .inline-preview { margin-top:10px; padding-top:10px; border-top:1px dashed #bdc8c2; color:#30423a; font-size:13px; line-height:1.75; }
+    .version-tools { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .version-switch { display:inline-flex; border:1px solid #bdc8c2; border-radius:5px; overflow:hidden; }
+    .version-switch button { border:0; padding:7px 12px; background:#fff; color:var(--green); }
+    .version-switch button[aria-pressed="true"] { background:var(--green); color:#fff; }
+    .version-switch button:focus-visible { outline:2px solid #b45309; outline-offset:-3px; }
+    .version-comparison { display:grid; gap:10px; margin-top:12px; }
+    .comparison-text { white-space:pre-wrap; }
+    .version-label { color:var(--muted); font-weight:400; margin-left:6px; }
+    .remedy-field { margin:12px 0; font-size:13px; }
+    .remedy-field > span { display:block; margin-bottom:5px; }
+    .remedy-menu { position:relative; }
+    .remedy-menu summary { padding:9px 11px; min-height:38px; border:1px solid var(--line); border-radius:5px; background:#fff; cursor:pointer; list-style-position:inside; }
+    .remedy-menu summary:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+    .remedy-options { position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:10; display:grid; gap:4px; padding:6px; border:1px solid var(--line); border-radius:5px; background:#fff; box-shadow:0 6px 18px #0002; }
+    .remedy-menu:not([open]) .remedy-options { display:none; }
+    .remedy-options .check-option { min-width:0; }
+    .preview-label { display:block; margin-bottom:4px; color:var(--green); font-size:11px; font-weight:700; }
+    .question.excluded .question-head { border-bottom:0; }
+    .excluded-note { padding:0 14px 13px; color:var(--muted); font-size:12px; }
+    .manage-list { display:grid; gap:8px; margin-top:10px; }
+    .manage-row { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; padding:8px; border:1px solid var(--line); border-radius:5px; font-size:12px; line-height:1.45; }
+    .output-title { padding:10px 12px; border-bottom:1px solid var(--line); }
+    .output-body { padding:12px; }
+    .clause-list { display:grid; gap:10px; }
+    .clause { padding:10px 11px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    .clause-head { margin-bottom:7px; display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--green); font-size:12px; font-weight:700; }
+    .clause textarea { min-height:96px; resize:vertical; border:0; padding:0; line-height:1.75; }
+    .manual-badge { display:inline-flex; align-items:center; min-height:28px; padding:3px 8px; border:1px solid #b45309; border-radius:4px; background:var(--amber-bg); color:#9a3412; font-size:12px; font-weight:700; white-space:nowrap; }
+    .manual-badge.added { border-color:#34745a; background:#edf7f2; color:#245c47; }
+    .manual-badge[hidden] { display:none; }
+    .empty-state { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+    .risk-list,.missing-list { margin:0; padding-left:20px; font-size:13px; line-height:1.65; }
+    .risk-list li.danger { color:var(--danger); }
+    .risk-list li.warn { color:var(--amber); }
+    .chat-log { height:300px; overflow:auto; padding:10px; border:1px solid var(--line); border-radius:5px; background:var(--soft); }
+    .chat-message { margin-bottom:8px; padding:8px 9px; border-radius:5px; background:#fff; font-size:13px; line-height:1.55; }
+    .chat-message.system { border-left:3px solid var(--green); }
+    .chat-compose { display:grid; gap:8px; margin-top:9px; }
+    .chat-compose textarea { min-height:74px; resize:vertical; }
+    .toast { position:fixed; left:50%; bottom:22px; z-index:20; transform:translate(-50%,18px); padding:9px 14px; border-radius:5px; background:#17211d; color:#fff; opacity:0; pointer-events:none; transition:.18s; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .print-area { display:none; }
+    @media (min-width:1181px) {
+      body { overflow:hidden; }
+      .layout { height:calc(100vh - 64px); min-height:0; overflow:hidden; }
+      aside,main,.result-panel { height:100%; overflow-y:auto; scrollbar-gutter:stable; }
+    }
+    @media (max-width:1180px) { .layout { grid-template-columns:260px 1fr; } .result-panel { grid-column:1/-1; border-top:1px solid var(--line); } main { border-right:0; } }
+    @media (max-width:760px) { body > header { align-items:flex-start; flex-direction:column; } .header-actions { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } .header-actions .btn { width:100%; } .layout { display:block; } aside,main,.result-panel { border:0; padding:10px; } .topic-options,.topic-fields { grid-template-columns:1fr; } .topic-fields .wide { grid-column:auto; } }
+    @media print {
+      @page { size:A4; margin:0; }
+      body { background:#fff; color:#000; overflow:visible; }
+      body > header,.layout,.toast { display:none !important; }
+      .print-area { display:block; font-family:"Microsoft JhengHei","Noto Sans TC",serif; font-size:12pt; line-height:1.75; }
+      .contract-page { position:relative; width:210mm; height:296.8mm; overflow:hidden; background:#fff; break-inside:avoid-page; page-break-inside:avoid; }
+      .contract-page:not(:last-child) { break-after:page; page-break-after:always; }
+      .contract-header { position:absolute; z-index:3; top:11.5mm; left:16.5mm; right:16.5mm; height:13mm; }
+      .contract-brand { position:absolute; top:0; left:0; width:82mm; height:auto; }
+      .contract-number { position:absolute; top:7mm; right:0; white-space:nowrap; font-size:11pt; }
+      .contract-number-value { display:inline-block; min-width:34mm; padding:0 1.5mm 1mm; border-bottom:.3mm solid #222; text-align:center; }
+      .contract-watermark { position:absolute; z-index:0; top:86mm; left:50%; width:105mm; transform:translateX(-50%); opacity:.13; }
+      .contract-content { position:absolute; z-index:2; top:28mm; left:18mm; right:18mm; bottom:14mm; height:auto; min-height:0; padding:0; border:0; overflow:visible; scrollbar-gutter:auto; }
+      .contract-page.is-last .contract-content { bottom:78mm; }
+      .contract-title { margin:0 0 9mm; font-family:"DFKai-SB","BiauKai","Microsoft JhengHei",serif; font-size:24pt; line-height:1.1; }
+      .contract-clauses { margin:0; padding-left:9mm; }
+      .contract-clauses li { margin-bottom:3mm; padding-left:1mm; break-inside:avoid; text-align:justify; white-space:pre-wrap; overflow-wrap:anywhere; }
+      .contract-clauses li.is-continuation { list-style:none; }
+      .contract-signatures { position:absolute; z-index:2; left:18mm; right:18mm; bottom:13.5mm; min-height:58mm; display:grid; align-content:end; gap:7mm; }
+      .contract-page:not(.is-last) .contract-signatures { display:none; }
+      .signature-row { display:grid; grid-template-columns:30mm 1fr 22mm; align-items:end; gap:3mm; }
+      .signature-label { font-size:13pt; }
+      .signature-line { height:10mm; border-bottom:.3mm solid #222; }
+      .signature-seal { width:18mm; height:18mm; border:.3mm solid #222; }
+      .contract-date { margin-top:4mm; display:flex; justify-content:space-between; font-size:13pt; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><h1>建地特約事項網頁demo</h1><span>林宜慶地政士事務所</span></div>
+    <div class="header-actions">
+      <button class="btn secondary" id="loadSampleBtn" type="button">載入範例</button>
+      <button class="btn secondary" id="resetBtn" type="button">恢復初始</button>
+      <button class="btn" id="copyBtn" type="button">複製特約</button>
+      <button class="btn" id="downloadBtn" type="button">匯出 PDF</button>
+    </div>
+  </header>
+  <div class="layout">
+    <aside>
+      <nav class="side-tabs" aria-label="左側功能">
+        <button class="side-tab active" type="button" data-panel="pdf">PDF 資料</button>
+        <button class="side-tab" type="button" data-panel="ai">AI 聊天室</button>
+      </nav>
+      <section class="side-panel" data-panel-content="pdf">
+        <div class="section">
+          <h2 class="section-title">PDF 資料</h2>
+          <div class="fields">
+            <label class="field">契約書編號<input type="text" data-case="contractNo" placeholder="例如：11506012345" /></label>
+            <label class="field">契約日期<input type="text" data-case="contractDate" placeholder="例如：115年6月10日" /></label>
+          </div>
+        </div>
+      </section>
+      <section class="side-panel" data-panel-content="ai" hidden>
+        <div class="section">
+          <h2 class="section-title">AI 聊天室</h2>
+          <div class="chat-log" id="chatLog"><div class="chat-message system">AI 功能尚未連接。未來將可參考目前問答與特約草稿回答合約問題。</div></div>
+          <div class="chat-compose"><textarea id="chatInput" placeholder="輸入合約問題" disabled></textarea><button class="btn" type="button" id="chatSendBtn" disabled>傳送</button></div>
+        </div>
+      </section>
+    </aside>
+    <main>
+      <section class="section"><h2 class="section-title">建地題庫</h2></section>
+      <div class="question-list" id="questionList"></div>
+    </main>
+    <section class="result-panel">
+      <div class="output-block">
+        <div class="output-title"><span>特約事項草稿</span><div class="topic-actions"><span class="tag" id="clauseCount">3 條</span><button class="btn secondary small" id="addClauseBtn" type="button">新增條文</button></div></div>
+        <div class="output-body" id="clauseOutput"></div>
+      </div>
+      <div class="output-block"><div class="output-title">高風險提醒 <span class="tag" id="riskCount">0 項</span></div><div class="output-body" id="riskOutput"></div></div>
+      <div class="output-block"><div class="output-title">待補資料 <span class="tag" id="missingCount">0 項</span></div><div class="output-body" id="missingOutput"></div></div>
+    </section>
+  </div>
+  <div class="print-area" id="printArea"></div><div class="toast" id="toast"></div>
+  <script>
+    const FIXED_CLAUSES = [
+      { id:"fixed-1", text:"買方於完稅款時，應依地政士通知，將辦理產權移轉所需之相關稅費、規費及代辦費匯入指定銀行帳戶。" },
+      { id:"fixed-2", text:"雙方同意於辦理產權登記時，授權地政士依報稅日期訂立物權契約日期。" },
+      { id:"fixed-3", text:"雙方合意以「林宜慶地政士事務所」為本約騎縫章。" }
+    ];
+    const f = (key,label,type="text",options=[],wide=false,placeholder="") => ({key,label,type,options,wide,placeholder});
+    const townhouseQuestions = [
+      { id:"H01", title:"屋況瑕疵、滲漏水、壁癌、龜裂及地板膨拱爆磚", risk:"高", topics:[
+        { id:"repair", label:"滲漏水修繕及保固", fields:[f("location","具體位置"),f("issue","滲水或漏水情形"),f("party","由誰處理","select",["賣方","買方","雙方另議"]),f("deadline","完成期限"),f("repair","具體修繕方式","text",[],true),f("warranty","保固內容及期間","text",[],true)], template:"本標的{location}目前有{issue}。雙方約定由{party}於{deadline}{repair}；修繕後依{warranty}負責，其他未約定事項不由系統自行推定。" },
+        { id:"buyer", label:"買方自行處理", fields:[f("location","具體位置"),f("issue","具體事項"),f("responsibility","賣方責任範圍","text",[],true)], template:"本標的{location}有{issue}情形，買方已於簽約前知悉其位置與狀況；雙方約定由買方於交屋後自行處理，賣方是否負擔及負擔至何範圍，依{responsibility}辦理。" },
+        { id:"multi", label:"多項屋況整合", fields:[f("details","各位置、事項及處理方式","textarea",[],true),f("responsibility","費用、保固及責任範圍","textarea",[],true)], template:"本標的目前已知屋況如下：{details}。各項費用、保固及處理後責任範圍分別依{responsibility}辦理。" }
+      ]},
+      { id:"H02", title:"斷水斷電及水電附屬設備", risk:"一般", topics:[
+        { id:"utilities", label:"斷水斷電", fields:[f("status","目前狀態","select",["供水正常","已停止供水","供電正常","已停止供電","其他"]),f("action","辦理事項","select",["恢復供水","恢復供電","相關申請","其他"]),f("party","辦理人","select",["賣方","買方","雙方"]),f("deadline","期限"),f("fee","費用負擔","select",["賣方","買方","雙方另議"])], template:"本標的目前{status}。雙方約定由{party}於{deadline}前辦理{action}，所需費用由{fee}負擔。" },
+        { id:"equipment", label:"水塔、抽水馬達、淨水器", fields:[f("name","設備名稱"),f("ownership","所有及使用情形"),f("handling","交付或拆除方式","textarea",[],true),f("deadline","期限"),f("thirdParty","第三人所有或租賃之處理","text",[],true)], template:"本標的現設有{name}，其所有及使用情形為{ownership}。雙方約定{handling}；屬第三人所有或租賃者，由當事人於{deadline}前依{thirdParty}辦理。" },
+        { id:"solar", label:"太陽能自設或出租", fields:[f("owner","所有人或設置人"),f("period","契約期間"),f("handling","設備及契約處理","select",["由買方承受","賣方於期限前終止或拆除","其他"]),f("detail","收益、費用及權利義務","textarea",[],true)], template:"本標的屋頂設有太陽能設備，所有人或設置人為{owner}，相關租賃或使用契約期間為{period}。雙方約定該設備及契約{handling}，收益、費用及權利義務依{detail}辦理。" },
+        { id:"sewer", label:"污水下水道接管", fields:[f("status","接管情形","select",["已接管","尚未接管","工程進行中","其他"]),f("party","辦理人","select",["賣方","買方","雙方"]),f("deadline","期限"),f("method","工程及費用處理方式","textarea",[],true)], template:"本標的所在地之污水下水道接管情形為{status}。雙方約定接管、用戶排水設備、工程及費用由{party}於{deadline}前依{method}辦理。" },
+        { id:"water", label:"地下水供水", fields:[f("source","目前供水方式","select",["自來水","地下水","其他"])], template:"本標的目前供水方式為{source}，買方已知悉目前供水方式。日後如政府或台灣自來水公司辦理自來水延管或用戶接水工程，其申裝條件、工程期程及相關費用依主管機關及台灣自來水公司規定辦理。" }
+      ]},
+      { id:"H03", title:"提前點交及第三人占用", risk:"高", topics:[
+        { id:"early", label:"提前點交", fields:[f("date","提前點交日期","date"),f("scope","鑰匙或使用範圍"),f("purpose","用途","select",["進住","裝修","放置物品","其他"]),f("limits","行為及限制","textarea",[],true),f("fee","水電及其他費用負擔"),f("return","買賣未完成時返還方式及期限","textarea",[],true)], template:"雙方同意買方自{date}起於正式交屋前先行取得{scope}，作{purpose}。買方得進行之行為及限制為{limits}，水電及其他費用由{fee}負擔；買賣未完成時，買方應依{return}返還標的、物品及鑰匙。" },
+        { id:"occupied", label:"第三人占用", fields:[f("person","占用人"),f("scope","占用範圍"),f("basis","原因或依據"),f("party","負責處理者"),f("deadline","遷離期限","date"),f("handling","費用及未完成時處理","textarea",[],true)], template:"本標的目前由{person}使用或占用{scope}，其原因或依據為{basis}。雙方約定由{party}於{deadline}前完成遷離、騰空及點交，相關費用與未完成時之處理依{handling}辦理。" }
+      ]},
+      { id:"H04", title:"出租、終止租約、租約承受、換約及押租金", risk:"高", topics:[
+        { id:"terminate", label:"終止租約", fields:[f("tenant","承租人"),f("scope","租賃範圍"),f("deadline","終止及遷離期限"),f("settlement","押租金、租金與水電費結算","textarea",[],true)], template:"本標的目前出租予{tenant}，租賃範圍為{scope}。雙方約定由賣方於{deadline}完成租賃關係終止、承租人遷離、房屋騰空及點交；押租金、租金與水電費之處理方式為{settlement}。" },
+        { id:"assume", label:"租約承受", fields:[f("tenant","承租人"),f("endDate","租期至"),f("rent","每月租金"),f("deposit","押租金"),f("startDate","買方承受日期"),f("settlement","押租金移交或結算方式","textarea",[],true)], template:"本標的目前出租予{tenant}，租期至{endDate}，每月租金及押租金分別為新臺幣{rent}元及{deposit}元。雙方約定自{startDate}起由買方依經相關當事人確認之內容處理後續租賃關係，賣方並將押租金依{settlement}移交或結算。" },
+        { id:"renew", label:"換約", fields:[f("party","協同換約者","select",["買方","賣方","雙方"]),f("deadline","期限"),f("handling","原租約、押租金、租金及水電處理","textarea",[],true)], template:"雙方知悉本標的目前有租賃關係，並約定由{party}協同承租人於{deadline}前完成新租約簽訂或換約；原租約、押租金、租金及水電費依{handling}處理。" }
+      ]},
+      { id:"H05", title:"國有基地出租、仁愛之家、地上權及對外通行道路持分", risk:"高", topics:[
+        { id:"baseRight", label:"特殊基地權利", fields:[f("type","權利類型","select",["國有基地出租","仁愛之家","地上權","其他"]),f("owner","基地所有權人或權利人"),f("terms","來源文件、期間、租金及承受條件","textarea",[],true),f("party","辦理人"),f("deadline","期限"),f("action","申請、同意、換約或承受方式","textarea",[],true)], template:"本標的建物坐落基地涉及{type}，基地所有權人或相關權利人為{owner}，權利來源文件、期間、租金或費用及承受條件為{terms}。雙方約定由{party}於{deadline}前完成{action}，未經文件確認之法律效果不由題庫預設。" },
+        { id:"roadShare", label:"對外通行道路持分", fields:[f("landNo","道路地號"),f("share","應有部分比例"),f("handling","移轉、價金、文件及通知同意事項","textarea",[],true)], template:"本件買賣另包含基地對外通行道路之土地持分，地號為{landNo}，應有部分為{share}。雙方就該道路持分之移轉、價金、應備文件及通知或同意事項約定為{handling}。" }
+      ]},
+      { id:"H06", title:"繼承及權狀補發", risk:"高", topics:[
+        { id:"inheritance", label:"繼承案件", fields:[f("matter","繼承事項"),f("decedent","被繼承人"),f("status","繼承人及登記情形","textarea",[],true),f("party","辦理人"),f("deadline","期限")], template:"本標的目前涉及{matter}，被繼承人為{decedent}，繼承人及目前登記情形為{status}。雙方約定由{party}於{deadline}前完成繼承登記及所需文件補正，完成後再依契約約定辦理產權移轉。" },
+        { id:"deed", label:"權狀補發", fields:[f("target","權狀種類","select",["土地","建物","土地及建物"]),f("reason","原因","select",["遺失","毀損","其他"]),f("party","辦理人"),f("deadline","期限"),f("handling","補發程序及費用負擔","textarea",[],true)], template:"本標的之{target}所有權狀因{reason}需辦理相關程序，由{party}於{deadline}前完成補發或其他處理，應備文件與費用負擔依{handling}辦理。" }
+      ]},
+      { id:"H07", title:"貸款條件及解約但書", risk:"高", topics:[
+        { id:"loan", label:"貸款條件", fields:[f("bank","金融機構"),f("amount","最低貸款金額"),f("ratio","最低核貸成數"),f("deadline","買方提供資料期限"),f("notice","通知期限及方式"),f("handling","未達條件時處理","textarea",[],true)], template:"買方預計以本標的向{bank}申請貸款，雙方約定貸款金額至少新臺幣{amount}元或核貸成數至少{ratio}。買方應於{deadline}前依金融機構要求提供資料；如核貸未達條件，應於{notice}通知，並依{handling}辦理。" },
+        { id:"fault", label:"歸責原因區分", fields:[f("rule","歸責原因判斷方式","textarea",[],true),f("handling","契約、價金及費用處理","textarea",[],true)], template:"貸款未達約定條件時，雙方是否區分因買方信用、負債、資料不全、標的估價或其他原因所致，依{rule}判斷；契約、價金及已支出費用之處理方式為{handling}。" }
+      ]},
+      { id:"H08", title:"代理授權", risk:"高", topics:[
+        { id:"authority", label:"代理授權", fields:[f("side","當事人","select",["買方","賣方"]),f("name","當事人名稱"),f("entity","身分類型","select",["個人","公司","社團法人","其他"]),f("agent","代理或代表人"),f("role","代理身分","select",["法定代表人","代理人","受任人","其他"]),f("scope","授權辦理事項"),f("conditions","合法授權條件","textarea",[],true),f("deadline","文件提出期限"),f("documents","應提出文件"),f("before","授權取得前得辦事項"),f("failure","授權不足或無效之處理","textarea",[],true)], template:"本契約之{side}{name}為{entity}，由{agent}以{role}身分簽訂及辦理{scope}事項。其合法授權應符合{conditions}條件，並於{deadline}前提出{documents}。合法授權取得前得辦理之事項為{before}；期限內未取得合法授權、授權範圍不足、授權文件無效或內容不符時，契約效力、後續履行及已付款項依{failure}處理。" }
+      ]},
+      { id:"H09", title:"非自然身故、海砂屋、輻射屋及氯離子", risk:"最高", topics:[
+        { id:"death", label:"非自然身故", fields:[f("time","發生時間"),f("location","發生位置"),f("event","具體情形"),f("agreement","其他約定","textarea",[],true)], template:"賣方就其知悉範圍告知買方，本標的曾於{time}在{location}發生{event}；買方已於簽約前知悉前述事項，雙方其他約定為{agreement}。" },
+        { id:"seaSand", label:"海砂屋或相關檢測", fields:[f("status","資料或檢測狀態","select",["已有檢測資料","由當事人於期限前辦理檢測","其他"]),f("result","檢測單位、日期、範圍及結果","textarea",[],true),f("handling","再檢測、費用及結果後處理","textarea",[],true)], template:"本標的目前{status}，檢測單位、日期、範圍及結果為{result}。買方已審閱相關資料，雙方就再檢測、費用及結果後處理約定為{handling}。" },
+        { id:"radiation", label:"輻射屋", fields:[f("status","檢測或查詢資料"),f("party","辦理人"),f("deadline","期限"),f("action","查詢、檢測或文件提供"),f("handling","結果及後續處理","textarea",[],true)], template:"本標的之輻射檢測或查詢資料情形為{status}。雙方約定由{party}於{deadline}前完成{action}，結果及後續處理方式為{handling}。" },
+        { id:"chloride", label:"氯離子", fields:[f("document","現有檢測文件"),f("result","檢測單位、日期、範圍及結果","textarea",[],true),f("handling","再檢測、費用及結果後處理","textarea",[],true)], template:"本標的混凝土氯離子檢測之現有資料為{document}，檢測單位、日期、範圍及結果為{result}。雙方已確認前述資料，並約定{handling}。" }
+      ]},
+      { id:"H10", title:"法定空地註記", risk:"最高", topics:[
+        { id:"openSpace", label:"法定空地註記", fields:[f("target","登記標的"),f("note","註記全文或摘要","textarea",[],true),f("registration","登記日期及字號"),f("document","相關文件"),f("party","辦理人"),f("deadline","期限"),f("action","查明、申請或處理方式","textarea",[],true),f("effect","交易及後續使用處理","textarea",[],true)], template:"本標的之{target}標示部有{note}，登記日期及字號為{registration}，相關文件為{document}。買方已於簽約前審閱前述資料；雙方約定由{party}於{deadline}前完成{action}，對交易及後續使用之處理方式為{effect}。" }
+      ]},
+      { id:"H11", title:"預告登記、抵押權、信託及其他產權限制", risk:"最高", topics:[
+        { id:"notice", label:"預告登記", fields:[f("content","權利人及登記內容"),f("party","辦理人"),f("deadline","期限"),f("action","塗銷、同意或其他處理")], template:"本標的目前有預告登記，權利人及登記內容為{content}。雙方約定由{party}於{deadline}前完成{action}，完成後再依約辦理產權移轉。" },
+        { id:"noticeMortgage", label:"預告登記加抵押權", fields:[f("content","權利人及登記內容","textarea",[],true),f("party","辦理人"),f("deadline","期限"),f("action","具體處理"),f("document","取得文件")], template:"本標的同時有預告登記及抵押權，預告登記權利人、抵押權人與各登記內容為{content}。由{party}於{deadline}前完成{action}，並取得{document}後辦理產權移轉。" },
+        { id:"privateMortgage", label:"私人抵押權", fields:[f("creditor","私人抵押權人"),f("content","擔保金額及內容"),f("party","辦理人"),f("deadline","期限"),f("action","清償塗銷或其他處理"),f("fee","費用負擔")], template:"本標的設定抵押權予{creditor}，擔保金額及內容為{content}。雙方約定由{party}於{deadline}前完成{action}，並取得登記所需文件，費用由{fee}負擔。" },
+        { id:"trust", label:"信託", fields:[f("content","受託人及信託登記內容","textarea",[],true),f("party","辦理人"),f("deadline","期限")], template:"本標的目前登記為信託財產，受託人及信託登記內容為{content}。雙方約定由{party}於{deadline}前完成本件交易所需之信託處理、文件提供及產權移轉程序。" },
+        { id:"seizure", label:"假扣押或假處分", fields:[f("type","登記類型","select",["假扣押","假處分"]),f("content","權利人、日期字號及內容","textarea",[],true),f("party","辦理人"),f("deadline","期限"),f("action","具體處理")], template:"本標的目前有{type}登記，權利人、日期字號及內容為{content}。雙方約定由{party}於{deadline}前完成{action}，完成後再依約辦理產權移轉。" },
+        { id:"litigation", label:"訴訟繫屬相關註記", fields:[f("content","訴訟或註記內容","textarea",[],true),f("party","辦理人"),f("deadline","期限"),f("action","查明或文件處理"),f("handling","後續辦理方式")], template:"本標的登記資料有訴訟或訴訟繫屬相關註記，其內容為{content}。雙方約定由{party}於{deadline}前完成{action}，後續依{handling}辦理。" },
+        { id:"housingLoan", label:"國宅貸款", fields:[f("content","貸款或登記事項"),f("party","辦理人"),f("deadline","期限"),f("action","具體處理"),f("fee","費用負擔")], template:"本標的涉及國宅貸款或相關登記事項，目前情形為{content}。雙方約定由{party}於{deadline}前完成{action}，相關費用由{fee}負擔。" }
+      ]},
+      { id:"H12", title:"公司或法人處分程序及公司設立", risk:"高", topics:[
+        { id:"company", label:"公司或法人程序及公司設立", fields:[f("side","當事人","select",["買方","賣方"]),f("name","公司或法人名稱"),f("actionType","交易行為","select",["處分","取得"]),f("procedure","應完成之內部程序","textarea",[],true),f("completed","已完成程序及文件","textarea",[],true),f("deadline","補正期限"),f("before","完成前得辦事項"),f("failure","未完成或文件無效之處理","textarea",[],true),f("registration","公司登記、設址或使用處理","textarea",[],true),f("usageFailure","不能設立、登記或使用時處理","textarea",[],true)], template:"本件{side}{name}為公司或法人，其就本件不動產{actionType}應完成之內部權責程序為{procedure}，現已完成並提出{completed}；尚未完成部分應於{deadline}前補正。完成前得辦理之事項為{before}；未於期限內完成、決議內容不符、授權不足或文件無效時，契約效力、後續履行及已付款項依{failure}處理。其後，就本標的現有公司或法人登記，以及買方預定公司設立、登記、設址或使用，雙方約定{registration}。如不能辦理公司設立、登記、設址或預定使用，契約及相關款項依{usageFailure}處理。" }
+      ]}
+    ];
+    const farmQuestions = [
+      { id:"Q01", title:"建築線", risk:"高", topics:[
+        { id:"buildingLine", label:"建築線申請及核定", fields:[f("requirement","買方建築線需求"),f("party","申請辦理人","select",["賣方","買方"]),f("deadline","完成期限", "text",[],false,"例如：115年12月31日"),f("resultType","應完成事項","select",["指定","核定","其他"]),f("condition","核定結果應符合條件"),f("refundDays","解除後退款期限（日）")], template:"雙方確認買方對本標的之建築線需求為{requirement}，並約定由{party}於民國{deadline}前向主管建築機關申請並完成建築線{resultType}，相關申請、測量、規費及其他必要費用均由賣方負擔。如屆期無法完成建築線指定或核定，或核定結果不符合買方約定之{condition}條件，買方得解除本契約；賣方應於契約解除之日起{refundDays}日內，無息返還已收受之全部價款，因本項申請及契約解除所生之必要費用亦由賣方負擔。" }
+      ]},
+      { id:"Q02", title:"建造執照", risk:"高", topics:[
+        { id:"permit", label:"建造執照條件確認", fields:[f("requirement","買方建築需求"),f("party","確認或取得人","select",["賣方","買方"]),f("deadline","完成期限"),f("permitCondition","應確認或取得內容"),f("nature","結果約定性質","select",["僅供參考","交易條件","其他"]),f("failure","未達成時處理","textarea",[],true)], template:"買方購買本標的之建築需求為{requirement}。雙方約定由{party}於民國{deadline}前確認或取得{permitCondition}；其結果之約定性質為{nature}，未達成時依{failure}辦理。" }
+      ]},
+      { id:"Q03", title:"土地使用同意書", risk:"高", topics:[
+        { id:"consent", label:"土地使用同意書", fields:[f("deadline","交付期限"),f("landType","土地標示方式","select",["段、小段及地號","其他"]),f("landNo","段、小段及地號或其他土地標示"),f("scope","同意使用範圍"),f("purpose","用途"),f("period","使用期限"),f("refundDays","解除後退款期限（日）")], template:"賣方應於民國{deadline}前，就{landType}：{landNo}之土地，出具或取得並交付買方土地使用同意書；同意使用之範圍為{scope}，用途為{purpose}，使用期限為{period}。土地使用同意書之申請、製作、用印、驗證及其他必要費用均由賣方負擔。如賣方未能於期限內出具或取得符合前述內容之土地使用同意書，買方得解除本契約；賣方應於契約解除之日起{refundDays}日內，無息返還已收受之全部價款，因本項辦理及契約解除所生之必要費用亦由賣方負擔。" }
+      ]},
+      { id:"Q04", title:"鑑界、界址及面積找補", risk:"高", topics:[
+        { id:"survey", label:"辦理鑑界", fields:[f("party","辦理及費用負擔人","select",["賣方","買方"]),f("deadline","完成期限"),f("difference","面積差異門檻"),f("adjustment","價款處理","select",["不找補","按單價找補","其他"]),f("unitPrice","找補單價及單位"),f("noSurvey","不辦理鑑界時的補貼或價款調整","textarea",[],true)], template:"雙方約定由{party}於民國{deadline}前辦理本標的鑑界並負擔費用，完成後通知他方會同確認界址；如登記面積差異達{difference}，價款依{adjustment}處理，約定找補單價及單位為{unitPrice}。若雙方不辦理鑑界，則依{noSurvey}之補貼或價款調整約定辦理。" }
+      ]},
+      { id:"Q05", title:"越界、占用及排除", risk:"高", topics:[
+        { id:"encroachment", label:"複丈確認及占用排除", fields:[f("surveyDate","土地複丈日期"),f("condition","占用情形"),f("removalDeadline","排除期限"),f("priceMethod","無法排除時價款處理","select",["按占用面積及單價減少價款","解除契約","其他"]),f("unitPrice","每平方公尺或坪找補單價"),f("refundDays","解除後退款期限（日）")], template:"雙方約定於民國{surveyDate}辦理土地複丈，以確認本標的有無遭他人占用或占用鄰地，以及占用之位置、範圍及面積；複丈及相關必要費用由賣方負擔。經複丈確認有{condition}占用情形者，賣方應於民國{removalDeadline}前完成排除、返還及點交，相關費用由賣方負擔。如賣方屆期無法完成排除，依{priceMethod}處理，找補單價為{unitPrice}。買方選擇解除契約時，賣方應於解除之日起{refundDays}日內，無息返還已收受之全部價款，因複丈、排除及契約解除所生之必要費用均由賣方負擔。" }
+      ]},
+      { id:"Q06", title:"道路及通行使用", risk:"高", topics:[
+        { id:"access", label:"道路、農路或第三人通行", fields:[f("location","使用位置"),f("useType","使用情形","select",["道路","農路","第三人通行","其他"]),f("area","面積"),f("userBasis","使用人及依據"),f("assumption","買方承受方式"),f("priceMethod","價款處理","select",["不調整","不計價","按單價找補","其他"]),f("unitPrice","找補單價及單位")], template:"本標的{location}位置現作{useType}使用，面積約{area}，使用人及依據為{userBasis}。買方依{assumption}方式承受；價款依{priceMethod}辦理，約定找補單價及單位為{unitPrice}。" }
+      ]},
+      { id:"Q07", title:"地上物、作物、圍籬及清運", risk:"一般", topics:[
+        { id:"objects", label:"保留、拆除及清運", fields:[f("retained","由買方依現況保留項目","textarea",[],true),f("removed","應拆除清運項目","textarea",[],true),f("party","處理人","select",["賣方","買方"]),f("deadline","完成期限"),f("feeParty","費用負擔人","select",["賣方","買方"])], template:"本標的土地上現有之地上物、作物及雜物，除{retained}由買方依現況保留外，其餘雙方約定應拆除清運之項目為{removed}，由{party}於民國{deadline}前完成拆除及清運，費用由{feeParty}負擔。" }
+      ]},
+      { id:"Q08", title:"未保存登記建物", risk:"高", topics:[
+        { id:"unregistered", label:"未保存登記建物處理", fields:[f("location","所在位置"),f("status","現況、權利來源及稅籍或水電資料","textarea",[],true),f("handling","建物處理方式","select",["隨同交付","由賣方拆除","其他"]),f("party","處理及費用負擔人","select",["賣方","買方"]),f("deadline","完成期限")], template:"本標的土地上之未保存登記建物位於{location}，現況、權利來源及稅籍或水電資料為{status}。雙方約定該建物{handling}，由{party}於{deadline}前完成相關處理並負擔費用。" }
+      ]},
+      { id:"Q09", title:"套繪管制及法定空地", risk:"最高", topics:[
+        { id:"control", label:"套繪、法定空地及用途限制", fields:[f("restriction","查詢所得限制"),f("deadline","排除處理期限"),f("handling","排除交易障礙方式","select",["解除套繪","變更","更正","取得主管機關確認","其他"]),f("refundDays","解除後退款期限（日）")], template:"賣方應於本契約約定之備件日前，自費向主管機關或相關單位申請查詢並確認本標的有無套繪管制、法定空地或其他影響買方預定用途之情形。如查詢結果顯示本標的涉及套繪管制、法定空地或其他{restriction}限制，賣方應於民國{deadline}前完成{handling}，相關費用均由賣方負擔。如屆期無法完成約定之處理，買方得解除本契約；賣方應於解除之日起{refundDays}日內，無息返還已收受之全部價款，因查詢、申請、處理及契約解除所生之必要費用均由賣方負擔。" }
+      ]},
+      { id:"Q11", title:"土地分割", risk:"最高", topics:[
+        { id:"division", label:"土地分割及面積差異", fields:[f("attachment","預定範圍依據","select",["分割示意圖","其他"]),f("deadline","分割完成期限"),f("difference","分割後面積差異處理","textarea",[],true),f("refundDays","解除後退款期限（日）")], template:"雙方以簽認之{attachment}所示位置作為預定買賣範圍，由賣方於民國{deadline}前完成分割，相關申請、測量、規費及其他必要費用均由賣方負擔。分割後面積與預定面積之差異，價款依{difference}方式處理。如因農業用地分割法令、共有人或其他私權關係致無法於期限內完成分割，買方得解除本契約；賣方應於解除之日起{refundDays}日內無息返還全部已收價款，因分割及契約解除所生之必要費用亦由賣方負擔。" }
+      ]},
+      { id:"Q12", title:"共有土地分管", risk:"最高", topics:[
+        { id:"management", label:"共有土地分管協議", fields:[f("status","分管情形","select",["書面分管","實際分管","無分管"]),f("basis","使用範圍及依據","textarea",[],true),f("deadline","分管協議交付期限"),f("refundDays","解除後退款期限（日）")], template:"本標的共有土地現有{status}情形，其使用範圍及依據為{basis}。賣方應於民國{deadline}前取得並交付符合雙方約定之分管協議書，相關費用由賣方負擔。如屆期無法取得，買方得解除本契約；賣方應於解除之日起{refundDays}日內無息返還全部已收價款，因取得分管協議及契約解除所生之必要費用亦由賣方負擔。" }
+      ]},
+      { id:"Q13", title:"地籍界址、道路境界及建築線", risk:"最高", topics:[
+        { id:"threeLines", label:"三線位置及關係確認", fields:[f("deadline","確認期限"),f("roadRequirement","買方要求臨路寬度或長度"),f("condition","確認結果應符合條件"),f("refundDays","解除後退款期限（日）")], template:"雙方約定由賣方於民國{deadline}前完成地籍界址、道路境界及建築線之確認，並確認三線之位置及關係；買方要求之臨路寬度或長度為{roadRequirement}，相關申請、測量及其他必要費用由賣方負擔。如屆期無法完成三線確認，或確認結果不符合{condition}條件，買方得解除本契約；賣方應於解除之日起{refundDays}日內無息返還全部已收價款，相關必要費用亦由賣方負擔。" }
+      ]},
+      { id:"Q14", title:"農地及共有土地優先購買權", risk:"最高", topics:[
+        { id:"preemption", label:"優先購買權通知及競合", fields:[f("rightType","可能涉及的優先購買權"),f("basis","法令或約定依據"),f("holder","優先購買權人"),f("noticeDeadline","通知及證明完成期限"),f("refundDays","解除後退款期限（日）"),f("priorityRule","多人主張或競合順位依據","textarea",[],true),f("transferDeadline","競合案件最終移轉期限")], template:"本件可能涉及之優先購買權為{rightType}，其法令或約定依據為{basis}，優先購買權人為{holder}。賣方應於民國{noticeDeadline}前，依前述法令或約定，以書面將本契約之買賣標的、價金、付款方式及其他交易條件通知經查明之優先購買權人，並提出通知、送達、放棄優先購買權或其他依法所需之證明文件；如通知後變更重要交易條件，賣方應依法重新通知。如優先購買權人於期限內以相同條件合法主張並行使權利，經地政士檢視相關文件並通知買賣雙方後，雙方同意解除本契約。賣方應於解除之日起{refundDays}日內無息返還全部已收價款，通知、申請、測量、登記、解除及退款所生之必要費用由賣方負擔。原買方及賣方仍應各自依其與仲介業者之契約支付約定之仲介服務費。如有二人以上主張或不同優先購買權競合，其成立及順位依{priorityRule}辦理；如相關法令未明定順位，不由本契約或系統自行判斷。如競合致本件無法於{transferDeadline}前完成移轉，雙方同意解除本契約，退款及費用依前述約定辦理。" }
+      ]},
+      { id:"Q15", title:"地上違章建物及特殊事故或事件", risk:"最高", topics:[
+        { id:"illegalBuilding", label:"違章建物及特殊事件處理", fields:[f("building","違章建物內容"),f("location","位置及範圍"),f("deadline","拆除清運期限"),f("specialEvent","其他事故或特殊事件及處理方式","textarea",[],true)], template:"本標的地上現有{building}違章建物，位置及範圍為{location}。賣方應於民國{deadline}前完成拆除及清運，並負擔拆除、清運及其他必要費用；其他事故或特殊事件及處理方式為{specialEvent}。" }
+      ]},
+      { id:"Q17", title:"地下埋設物、建築廢棄物、不喜之物及疑似污染物", risk:"最高", topics:[
+        { id:"buried", label:"簡易開挖檢視及排除", fields:[f("inspectionDate","土地複丈及開挖日期"),f("removalDeadline","排除處理期限"),f("handling","約定排除方式","textarea",[],true),f("refundDays","解除後退款期限（日）")], template:"雙方約定於民國{inspectionDate}土地複丈時，由賣方安排挖土機配合進行簡易開挖檢視，相關費用由賣方負擔。如發現地下埋設建築廢棄物、買方不喜之物或疑似污染化學物，賣方應於民國{removalDeadline}前完成挖除、清運或依{handling}進行排除處理，並負擔全部必要費用。如屆期無法完成排除，買方得解除本契約；賣方應於解除之日起{refundDays}日內，無息返還已收受之全部價款，因開挖、檢視、排除及契約解除所生之必要費用均由賣方負擔。" }
+      ]},
+      { id:"A01", title:"農業用地作農業使用證明及土地增值稅不課徵", risk:"最高", topics:[
+        { id:"agriculturalUse", label:"農用證明及不課徵申報", fields:[f("scenario","農地情境","select",["一般農地","區段徵收範圍內農地","市地重劃範圍內農地"]),f("deadline","申請及申報期限"),f("refundDays","解除後退款期限（日）")], template:"本標的屬雙方本次約定之{scenario}情境。賣方應於民國{deadline}前申請並取得農業用地作農業使用證明，並據以申報土地增值稅不課徵，相關申請、補正、規費及其他必要費用均由賣方負擔。如賣方未能於期限內取得農業用地作農業使用證明或完成約定之不課徵申報，買方得解除本契約；賣方應於解除之日起{refundDays}日內，無息返還已收受之全部價款，因申請及契約解除所生之必要費用亦由賣方負擔。" }
+      ]},
+      { id:"A02", title:"農作物、養殖物、收成與點交", risk:"高", topics:[
+        { id:"harvest", label:"農作物與收成點交", fields:[f("current","標的現有農作物或養殖物","textarea",[],true),f("handledItems","應收成或處理項目"),f("handler","處理人","select",["買方","賣方","承租人","其他"]),f("deadline","收成或處理期限"),f("assumedItems","隨土地由買方承受項目"),f("handover","土地點交時點"),f("overdue","屆期未完成部分處理","textarea",[],true)], template:"本標的現有{current}。其中{handledItems}由{handler}於民國{deadline}前完成收成或處理；{assumedItems}隨土地由買方承受。土地於{handover}辦理點交，屆期尚未完成之部分依{overdue}辦理。" }
+      ]},
+      { id:"A03", title:"水電、抽水馬達及地下水井", risk:"高", topics:[
+        { id:"utilities", label:"農業水電及設備處理", fields:[f("status","水、電及農業使用設備現況","textarea",[],true),f("delivered","隨土地交付買方項目"),f("removed","由賣方取回或移除項目"),f("deadline","取回或移除期限"),f("electricNo","電號"),f("waterNo","水號"),f("party","配合辦理人","select",["賣方","買方","雙方"]),f("action","水電資料處理","select",["變更","終止","其他"])], template:"本標的現有水、電及農業使用設備之現況為{status}。雙方約定{delivered}隨土地交付買方；{removed}由賣方於民國{deadline}前取回或移除。電號{electricNo}、水號{waterNo}及相關資料由{party}配合辦理{action}。" }
+      ]}
+    ];
+    const questions = [
+      { id:"Q01", title:"建築線指定及確認", risk:"最高", topics:[
+        { id:"buildingLine", label:"建築線現況及交易條件", fields:[f("status","建築線現況","select",["已完成指定","申請中","尚未申請","依法免指定","其他"]),f("authority","主管機關"),f("document","文件名稱及文號"),f("issueDate","核發日期"),f("drawing","圖號或附件"),f("party","辦理人","select",["賣方","買方"]),f("deadline","完成期限"),f("action","應完成事項","select",["建築線指定","查詢","確認","補正","其他"]),f("feeParty","費用負擔人","select",["賣方","買方"]),f("condition","臨接位置、臨路寬度或其他條件","textarea",[],true),f("conditionNature","約定性質","select",["參考事項","本件交易條件"]),f("failure","未達成效果","select",["展延","買方得書面解除契約","調整買賣價款","其他"]),f("failureDetail","展延期限、調整價款或其他細節"),f("refundDays","解除後退款期限（日）"),f("damage","可歸責一方之損害處理","textarea",[],true)], template:"本買賣標的之建築線現況為{status}；現有資料為主管機關{authority}、文件名稱及文號{document}、核發日期民國{issueDate}、圖號或附件{drawing}。雙方約定由{party}於民國{deadline}前完成{action}，相關申請、測量、規費及其他必要費用由{feeParty}負擔，並以主管機關正式書面或核定圖說為準。雙方以{condition}作為{conditionNature}。如屆期仍未完成，或正式結果不符合前述交易條件，雙方同意{failure}，細節為{failureDetail}。買方解除契約時，賣方應於解除通知送達後{refundDays}日內無息返還已收受之全部價款；申請、測量、契約解除及其他必要費用由{feeParty}負擔，可歸責一方之損害依{damage}處理。" }
+      ]},
+      { id:"Q02", title:"建造執照現況及取得條件", risk:"最高", topics:[
+        { id:"permit", label:"建造執照與核准圖說", fields:[f("status","建造執照現況","select",["已取得有效建造執照","申請中","尚未申請","執照已逾有效期限","其他"]),f("permitNo","執照號碼"),f("builder","起造人"),f("use","核准用途"),f("drawing","核准圖說附件"),f("validity","開工或有效期限"),f("party","辦理人","select",["賣方","買方"]),f("deadline","完成期限"),f("action","應完成事項","select",["取得建造執照","變更起造人","申請展期","確認核准圖說","其他"]),f("feeParty","費用負擔人","select",["賣方","買方"]),f("minimum","用途、樓層、面積及其他最低條件","textarea",[],true),f("nature","約定性質","select",["參考事項","本件交易條件"]),f("failure","未達成效果","select",["展延","買方得書面解除契約","重新議價","其他"]),f("failureDetail","展延期限或其他細節"),f("refundDays","解除後退款期限（日）")], template:"本買賣標的之建造執照現況為{status}，相關資料為執照號碼{permitNo}、起造人{builder}、核准用途{use}、核准圖說附件{drawing}、開工或有效期限{validity}。雙方約定由{party}於民國{deadline}前完成{action}，相關費用由{feeParty}負擔。雙方以主管機關正式核發之建造執照及核准圖說符合{minimum}作為{nature}。前述約定僅為買賣雙方間之交易條件，不拘束主管機關之審查及准駁。如屆期未完成、執照失效或核准內容未達交易條件，雙方同意{failure}，細節為{failureDetail}。契約解除時，賣方應於解除通知送達後{refundDays}日內無息返還已收受之全部價款；申請費、設計費及其他必要費用由{feeParty}負擔。" }
+      ]},
+      { id:"Q03", title:"土地使用同意書", risk:"最高", topics:[
+        { id:"consent", label:"同意書、進場及回復原狀", fields:[f("status","同意書現況","select",["未曾出具","已出具予買方","已出具予第三人","本次由賣方出具予買方","其他"]),f("deadline","交付期限"),f("landNo","段、小段及地號或其他土地標示"),f("beneficiary","受同意人"),f("purpose","使用目的","select",["申請建造執照","整地","施工","其他"]),f("scope","使用位置及範圍"),f("period","使用期間"),f("termination","撤回或終止條件"),f("feeParty","同意書費用負擔人","select",["賣方","買方"]),f("access","移轉前進場權限","select",["僅辦理行政申請，不得進場施工","得於約定範圍進場作業","其他"]),f("accessScope","得進場作業範圍"),f("liabilityParty","安全、保險及損害責任人","select",["賣方","買方"]),f("failure","未交付時處理","select",["解除契約","展延期限","其他"]),f("returnDays","交易未完成後返還或撤件期限（日）"),f("restoration","回復原狀方式","textarea",[],true),f("refundDays","解除後退款期限（日）")], template:"本標的土地使用同意書現況為{status}。賣方應於民國{deadline}前，就{landNo}出具或取得並交付買方土地使用同意書；受同意人為{beneficiary}，使用目的為{purpose}，使用位置及範圍為{scope}，使用期間為{period}，撤回或終止條件為{termination}。同意書必要費用由{feeParty}負擔。買方於所有權移轉前{access}，得進場範圍為{accessScope}；進場期間之安全維護、保險、第三人損害及回復原狀責任由{liabilityParty}負擔。如賣方未能於期限內交付，依{failure}處理。如本契約未完成、解除或終止，受同意人應於{returnDays}日內返還同意書正本、配合撤回或終止申請，並依{restoration}完成回復原狀。契約解除時，賣方應於{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q04", title:"鑑界、界址、面積更正及價款找補", risk:"高", topics:[
+        { id:"survey", label:"鑑界、複丈或面積更正", fields:[f("party","申請人","select",["賣方","買方"]),f("deadline","完成期限"),f("office","地政事務所"),f("application","申請種類","select",["鑑界","土地複丈","面積更正","其他"]),f("feeParty","費用負擔人","select",["賣方","買方"]),f("adjustment","更正後價款處理","select",["不找補價款","按平方公尺單價找補","按坪單價找補","其他"]),f("unitPrice","找補單價"),f("threshold","面積差異門檻"),f("decisionDays","知悉結果後決定期限（日）"),f("failure","超過門檻時處理","select",["重新議價","書面解除契約","其他"]),f("refundDays","解除後退款期限（日）"),f("dispute","界址爭議程序","select",["複丈","調處","訴訟","其他"])], template:"本買賣標的由{party}於民國{deadline}前向{office}地政事務所申請{application}，費用由{feeParty}負擔，完成後應通知他方會同確認界址及界標。雙方確認，鑑界或現場測量結果僅用以確認界址或使用現況，不當然變更土地登記面積；如經法定程序完成面積更正或分割登記，以變更後登記面積作為{adjustment}之基準，找補單價為{unitPrice}。面積差異如超過{threshold}，買方得於知悉正式登記結果後{decisionDays}日內選擇{failure}。解除時，賣方應於{refundDays}日內無息返還全部已收價款。界址如有爭議，雙方同意依{dispute}程序處理。" }
+      ]},
+      { id:"Q05", title:"土地複丈、占用及排除", risk:"最高", topics:[
+        { id:"encroachment", label:"占用確認與排除", fields:[f("surveyDeadline","複丈完成期限"),f("condition","占用情形","select",["第三人占用本標的","本標的地上物或設施越界占用鄰地","其他"]),f("removalDeadline","排除期限"),f("unit","減價計算單位","select",["平方公尺","坪"]),f("unitPrice","每單位減價金額"),f("adjustment","其他價款調整方式"),f("refundDays","解除後退款期限（日）")], template:"雙方約定由賣方於民國{surveyDeadline}前申請並完成本標的土地複丈，以確認占用位置、範圍及面積，相關必要費用由賣方負擔。經土地複丈確認有{condition}情形者，賣方應於民國{removalDeadline}前完成排除占用、拆除、返還及點交，相關費用均由賣方負擔。如屆期未能完成，買方得繼續履行並按每{unit}新臺幣{unitPrice}元減少買賣價款或依{adjustment}調整，亦得解除本契約。解除時，賣方應於解除通知送達後{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q06", title:"道路及通行權利", risk:"最高", topics:[
+        { id:"access", label:"道路類型、通行權源及條件", fields:[f("roadType","道路或通行情形","select",["公共道路","既成道路或現有巷道","私設通路","特定第三人通行","其他"]),f("location","位置、地號及面積"),f("beneficiary","使用人或受益土地"),f("method","通行方式","select",["人行","車行","管線","其他"]),f("basis","法律或事實依據","select",["已登記不動產役權","書面通行契約","袋地必要通行","行政機關認定","無書面依據之現況使用","其他"]),f("documents","文件、期間、對價及維護分擔","textarea",[],true),f("buyerHandling","買方承買或賣方補正方式","textarea",[],true),f("feeParty","相關費用負擔人","select",["賣方","買方"]),f("minimumWidth","最低通行寬度（公尺）"),f("failure","未達條件時處理","select",["展延","重新議價","買方解除契約","其他"]),f("refundDays","解除後退款期限（日）")], template:"本標的全部或部分土地目前供{roadType}使用，位置、地號及面積約為{location}，使用人或受益土地為{beneficiary}，通行方式為{method}。其法律或事實依據為{basis}；相關文件、期間、對價及維護分擔為{documents}。雙方約定{buyerHandling}，相關申請、設定、補正及必要費用由{feeParty}負擔。如期限內未取得約定之通行權源，或實際通行寬度未達{minimumWidth}公尺，雙方同意{failure}。解除時，賣方應於{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q07", title:"地上物、作物、圍籬及清運", risk:"高", topics:[
+        { id:"objects", label:"物件清冊、拆除及驗收", fields:[f("attachment","物件清冊、照片或現況圖附件"),f("owner","所有人或有權處分人"),f("retained","買方依現況承受項目","textarea",[],true),f("returned","賣方取回項目","textarea",[],true),f("party","拆除清運人","select",["賣方","買方"]),f("deadline","完成期限"),f("removed","拆除、搬離及清運項目","textarea",[],true),f("scope","拆除範圍","textarea",[],true),f("feeParty","費用負擔人","select",["賣方","買方"]),f("permitParty","行政程序辦理人","select",["賣方","買方"]),f("inspection","驗收依據","select",["現場照片","點交紀錄","其他"]),f("failure","未完成時處理","select",["保留價款","延期交屋","第三人處理並自應付款扣除","解除契約","其他"]),f("failureDetail","保留金額或其他細節"),f("refundDays","解除後退款期限（日）")], template:"本標的土地上現有之建物、棚架、作物、樹木、圍籬、水泥柱、廣告物、機具、廢棄物及其他物品，詳如附件{attachment}所示，其所有人或有權處分人為{owner}。由買方依現況承受之項目為{retained}；由賣方取回之項目為{returned}；由{party}於民國{deadline}前拆除、搬離及清運之項目為{removed}。拆除範圍包括{scope}，費用由{feeParty}負擔；依法應辦行政程序者由{permitParty}負責。完成後依{inspection}驗收；未完成時依{failure}處理，細節為{failureDetail}。解除時，賣方應於{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q08", title:"未辦保存登記建物", risk:"最高", topics:[
+        { id:"unregistered", label:"事實上處分權及交付", fields:[f("count","建物棟數"),f("address","門牌"),f("taxNo","房屋稅籍編號"),f("attachment","位置、範圍、構造及現況附件"),f("source","事實上處分權來源文件","textarea",[],true),f("rightsHolder","事實上處分權人及其他可能權利人"),f("handling","建物處理方式","select",["讓與並交付事實上處分權","由賣方拆除","建物不在交易範圍","其他"]),f("handlingDeadline","拆除或處理期限"),f("party","契稅、稅籍及水電資料辦理人","select",["賣方","買方"]),f("dataDeadline","資料變更期限"),f("feeParty","費用負擔人","select",["賣方","買方"]),f("proofDeadline","權利證明提出期限"),f("failure","無法交付時處理","select",["解除契約","保留價款","其他"]),f("refundDays","解除後退款期限（日）")], template:"本標的土地上現有未辦保存登記建物{count}棟，門牌為{address}，房屋稅籍編號為{taxNo}，建物位置、範圍、構造及現況詳附件{attachment}。賣方提出之事實上處分權來源及證明文件為{source}，目前事實上處分權人及其他可能權利人為{rightsHolder}。雙方約定{handling}，處理期限為{handlingDeadline}。雙方確認，未辦保存登記建物無法以一般建物所有權移轉登記方式辦理，房屋稅籍亦非所有權登記。契稅、稅籍、水電、門牌及其他資料由{party}於{dataDeadline}前辦理，費用由{feeParty}負擔。如賣方未能於{proofDeadline}前提出足以說明事實上處分權及交付權限之資料，或第三人主張權利致無法交付，依{failure}處理。解除時，賣方應於{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q09", title:"套繪管制及法定空地", risk:"最高", topics:[
+        { id:"control", label:"正式查詢及排除補正", fields:[f("status","查詢結果","select",["無已知套繪或法定空地","涉及套繪管制","屬其他建築基地之法定空地","兩者均涉及","其他"]),f("restriction","其他限制"),f("deadline","排除或補正期限"),f("handling","處理方式","select",["解除套繪","變更","更正","取得主管機關確認","其他"]),f("refundDays","解除後退款期限（日）")], template:"賣方應於備件日前自費向主管機關或相關單位申請查詢並確認本標的套繪管制、法定空地或其他影響買方預定用途之情形，並交付正式查詢資料。查詢結果為{status}，其他限制為{restriction}。賣方應於民國{deadline}前完成{handling}並提出主管機關正式證明文件；查詢、申請、測量、補正及其他必要費用均由賣方負擔。如屆期未完成或主管機關確認限制無法排除，買方得解除本契約，賣方應於解除通知送達後{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q11", title:"土地分割", risk:"最高", topics:[
+        { id:"division", label:"分割範圍、預審及面積差異", fields:[f("scopeType","買受範圍","select",["分割後之特定土地","現有地號全部","其他"]),f("attachment","簽認分割圖附件"),f("plannedArea","預定面積"),f("reviewAuthority","預審單位","select",["地政機關","建築主管機關","專業人員"]),f("reviewDate","預審日期"),f("reviewType","預審文件","select",["書面回覆","初步意見","其他"]),f("party","分割辦理人","select",["賣方","買方"]),f("deadline","完成期限"),f("feeParty","費用負擔人","select",["賣方","買方"]),f("unit","找補單位","select",["平方公尺","坪"]),f("unitPrice","找補單價"),f("adjustment","是否找補","select",["找補","不找補"]),f("threshold","差異門檻"),f("largeDifference","超過門檻時處理","select",["重新議價","解除契約","其他"]),f("failure","無法或逾期分割時處理","select",["展延","解除契約","其他"]),f("refundDays","解除後退款期限（日）")], template:"本件買受範圍為{scopeType}，預定分割位置、界線及範圍詳附件{attachment}，預定面積為{plannedArea}。雙方已就相關限制取得{reviewAuthority}於民國{reviewDate}之{reviewType}。由{party}於民國{deadline}前完成分割複丈及標示變更登記，費用由{feeParty}負擔；移轉標的以分割後新地號及登記面積為準。面積差異按每{unit}新臺幣{unitPrice}元{adjustment}；差異超過{threshold}時依{largeDifference}處理。如依法無法完成或屆期未完成，依{failure}處理。解除時，賣方應於{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q12", title:"共有土地分管與使用", risk:"最高", topics:[
+        { id:"management", label:"分管、管理及使用關係", fields:[f("share","賣方應有部分"),f("status","分管或管理現況","select",["無分管或管理約定","有書面分管契約","有實際分管但無書面文件","有管理決定","其他"]),f("registration","是否登記","select",["已登記","未登記","尚待確認"]),f("registrationDetail","登記事項"),f("attachment","使用範圍、通行及共同設施附件"),f("handling","既有關係處理","select",["買方依法承受","賣方限期取得新協議","不作為交易條件","其他"]),f("deadline","新協議取得期限"),f("costs","管理費、修繕、稅費及債務負擔","textarea",[],true),f("failure","未取得新協議時處理","select",["解除契約","展延期限","依現況承買並調整價款","其他"]),f("refundDays","解除後退款期限（日）")], template:"本買賣標的為共有土地，賣方出售之應有部分為{share}，共有人及持分依最新土地登記謄本。本標的目前{status}，登記狀態為{registration}，登記事項為{registrationDetail}；使用範圍、通行及共同設施詳附件{attachment}。買方確認取得者為土地應有部分，並非附件所示特定位置之單獨所有權。既有關係依{handling}處理，新協議期限為{deadline}，相關管理費、修繕、稅費及既存債務依{costs}負擔。如未於期限內完成，依{failure}處理。解除時，賣方應於{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q13", title:"地籍界址、道路境界及建築線交叉確認", risk:"最高", topics:[
+        { id:"crossCheck", label:"三類線界交叉確認", fields:[f("landOffice","地政事務所"),f("landDate","地籍界址成果日期"),f("landType","地籍成果類型","select",["鑑界","複丈"]),f("landDrawing","地籍成果圖號"),f("roadAuthority","道路相關主管機關"),f("roadDate","道路文件日期"),f("roadDrawing","道路文件圖號"),f("buildingAuthority","建築主管機關"),f("buildingDate","建築線文件日期"),f("buildingDrawing","建築線圖號"),f("status","三類線界現況","select",["無已知差異","存在差異","尚待確認"]),f("difference","差異內容"),f("party","後續辦理人","select",["賣方","買方"]),f("deadline","完成期限"),f("action","應完成事項","select",["鑑界","查詢","建築線指定","測量","其他"]),f("feeParty","費用負擔人","select",["賣方","買方"]),f("roadWidth","最低臨路寬度（公尺）"),f("roadLength","最低臨路長度（公尺）"),f("otherCondition","其他條件"),f("nature","約定性質","select",["參考事項","本件交易條件"]),f("failure","未達條件時處理","select",["展延","重新議價","買方解除契約","其他"]),f("refundDays","解除後退款期限（日）")], template:"雙方就本標的三類線界分別確認：地籍界址依{landOffice}地政事務所於民國{landDate}辦理之{landType}成果及圖號{landDrawing}；道路相關境界依{roadAuthority}於民國{roadDate}提供之文件及圖號{roadDrawing}；建築線依{buildingAuthority}於民國{buildingDate}核發之文件或圖號{buildingDrawing}。三類線界目前{status}，差異內容為{difference}。雙方約定由{party}於{deadline}前完成{action}，費用由{feeParty}負擔，並以臨路寬度至少{roadWidth}公尺、臨路長度至少{roadLength}公尺及{otherCondition}作為{nature}。如正式結果不符，依{failure}處理。解除時，賣方應於{refundDays}日內無息返還全部已收價款。" }
+      ]},
+      { id:"Q14", title:"共有土地處分及優先購買權", risk:"最高", exclusive:true, topics:[
+        { id:"shareSale", label:"狀態一：共有人出售自己的應有部分", fields:[f("sellerShare","賣方應有部分"),f("saleScope","本次出售範圍","select",["全部應有部分","部分應有部分","其他"]),f("saleShare","本次出售持分"),f("noticeDeadline","通知期限"),f("coOwners","其他共有人姓名或名稱","textarea",[],true),f("status","其他共有人處理狀態","select",["尚未表示","已書面放棄","期限屆滿未行使","已表示行使","其他"]),f("pendingHandling","權利確定前處理","select",["暫不辦理所有權移轉","保留買賣價款","其他"]),f("reservedAmount","保留價款金額"),f("refundDays","解除後退款期限（日）"),f("brokerFee","仲介服務報酬處理","select",["仍應支付","不予支付","其他"])], template:"賣方為本標的之共有人，其應有部分為{sellerShare}，本次出售範圍為{saleScope}，出售持分為{saleShare}，不包含其他共有人之應有部分。賣方應於民國{noticeDeadline}前，以本件完整相同交易條件書面通知其他共有人{coOwners}，並提出通知、送達、放棄或期限屆滿未行使之證明；重要交易條件變更時應依法重新通知。其他共有人之處理狀態為{status}。權利狀態確定前依{pendingHandling}辦理，保留價款為新臺幣{reservedAmount}元。如其他共有人依法行使優先購買權致無法移轉予買方，雙方同意解除契約；賣方應於解除通知送達後{refundDays}日內無息返還全部已收價款。買賣雙方對仲介服務報酬依{brokerFee}辦理。" },
+        { id:"article34", label:"狀態二：依土地法第34條之1處分共有土地全部", fields:[f("totalArea","共有土地全部面積"),f("attachment","共有人、持分及同意情形附件"),f("consenting","同意處分共有人"),f("people","同意人數"),f("share","同意應有部分合計"),f("noticeDeadline","通知或公告期限"),f("nonConsenting","未同意處分共有人"),f("compensation","對價受領或提存證明","textarea",[],true),f("transferDeadline","完成全部法定程序及移轉期限"),f("refundDays","解除後退款期限（日）"),f("brokerFee","仲介服務報酬處理","select",["仍應支付","不予支付","其他"])], template:"本標的為共有土地，全部面積為{totalArea}，共有人、應有部分及同意處分情形詳附件{attachment}。本件由部分共有人依土地法第34條之1規定處分共有土地全部；同意處分共有人為{consenting}，人數為{people}人，應有部分合計為{share}，並應符合相關法定門檻。本件出售標的為共有土地全部，而非僅出售同意處分共有人之應有部分。賣方或同意處分共有人應於民國{noticeDeadline}前，以完整交易條件書面通知未同意處分共有人{nonConsenting}；不能書面通知者應依法公告並保存證明。如其他共有人主張優先購買權，其行使方式及法律效果依適用法令辦理，不由本契約或系統自行判定。辦理移轉前應提出{compensation}。如優先購買權依法行使致無法移轉，或未能於民國{transferDeadline}前完成通知、公告、對價受領或提存及移轉程序，買方得解除契約；賣方應於解除通知送達後{refundDays}日內無息返還全部已收價款。買賣雙方對仲介服務報酬依{brokerFee}辦理。" }
+      ]}
+    ];
+    const DATE_FIELDS = {
+  "Q01.buildingLine": [
+    "issueDate",
+    "deadline"
+  ],
+  "Q02.permit": [
+    "validity",
+    "deadline"
+  ],
+  "Q03.consent": [
+    "deadline"
+  ],
+  "Q04.survey": [
+    "deadline"
+  ],
+  "Q05.encroachment": [
+    "surveyDeadline",
+    "removalDeadline"
+  ],
+  "Q07.objects": [
+    "deadline"
+  ],
+  "Q08.unregistered": [
+    "handlingDeadline",
+    "dataDeadline",
+    "proofDeadline"
+  ],
+  "Q09.control": [
+    "deadline"
+  ],
+  "Q11.division": [
+    "reviewDate",
+    "deadline"
+  ],
+  "Q12.management": [
+    "deadline"
+  ],
+  "Q13.crossCheck": [
+    "landDate",
+    "roadDate",
+    "buildingDate",
+    "deadline"
+  ],
+  "Q14.shareSale": [
+    "noticeDeadline"
+  ],
+  "Q14.article34": [
+    "noticeDeadline",
+    "transferDeadline"
+  ]
+};
+    questions.forEach(question=>question.topics.forEach(topic=>topic.fields.forEach(field=>{if((DATE_FIELDS[`${question.id}.${topic.id}`] || []).includes(field.key)){field.type="date";field.placeholder="";}})));
+
+    ["Q01","Q02"].forEach(id=>{
+      const topic=questions.find(q=>q.id===id).topics[0],details=topic.fields.find(field=>field.key==="failureDetail");
+      details.label="調整價款或其他處理細節";
+      details.dateAlternative={control:"failure",equals:"展延",key:"extensionDate"};
+      const dateField=f("extensionDate","展延期限","date");dateField.when={key:"failure",equals:"展延"};
+      topic.fields.splice(topic.fields.indexOf(details),0,dateField);
+    });
+
+    const permitTopic=questions.find(question=>question.id==="Q02").topics.find(topic=>topic.id==="permit");
+    permitTopic.fields=permitTopic.fields.filter(field=>field.key!=="failureDetail");
+    permitTopic.fields.find(field=>field.key==="failure").options=["展延至","買方得以書面解除契約","重新議價","其他"];
+    permitTopic.fields.find(field=>field.key==="extensionDate").when.equals="展延至";
+    permitTopic.template=permitTopic.template.replace("，細節為{failureDetail}","");
+    permitTopic.fields.push(f("terminationFeeParty","契約解除及其他必要費用負擔人","select",["買方","賣方"]));
+    permitTopic.template=permitTopic.template.replace("申請費、設計費及其他必要費用由{feeParty}負擔","申請費、設計費及其他必要費用由{terminationFeeParty}負擔");
+
+    const consentTopic=questions.find(question=>question.id==="Q03").topics.find(topic=>topic.id==="consent");
+    consentTopic.fields.find(field=>field.key==="accessScope").when={key:"access",equals:"得於約定範圍進場作業"};
+    consentTopic.template=consentTopic.template.replace("{access}，得進場範圍為{accessScope}","{access}");
+    consentTopic.fields.push(f("terminationFeeParty","契約解除後相關必要費用負擔人","select",["買方","賣方"]));
+    consentTopic.template=consentTopic.template.slice(0,consentTopic.template.indexOf("如賣方未能於期限內交付"))+"如賣方未能於期限內交付符合約定之土地使用同意書，買方得{failure}。如本契約未完成、解除或終止，受同意人應於{returnDays}日內返還同意書正本、配合撤回或終止已提出之申請，並依{restoration}完成回復原狀。契約解除時，賣方應於{refundDays}日內無息返還全部已收價款，相關必要費用由{terminationFeeParty}負擔。";
+
+    const buildingLineTopic=questions.find(question=>question.id==="Q01").topics.find(topic=>topic.id==="buildingLine");
+    const buildingConditionIndex=buildingLineTopic.fields.findIndex(field=>field.key==="condition");
+    const buildingCondition=f("condition","臨接位置、臨路寬度或其他條件","select",["依法得指定建築線","臨接位置＿＿＿＿","臨路寬度至少＿＿公尺","其他"],true);
+    const buildingPosition=f("conditionPosition","臨接位置","text",[],true,"請填寫臨接位置");
+    buildingPosition.when={key:"condition",equals:"臨接位置＿＿＿＿"};
+    const buildingRoadWidth=f("conditionRoadWidth","最低臨路寬度（公尺）","text",[],false,"例如：4.5");
+    buildingRoadWidth.when={key:"condition",equals:"臨路寬度至少＿＿公尺"};
+    buildingLineTopic.fields.splice(buildingConditionIndex,1,buildingCondition,buildingPosition,buildingRoadWidth);
+    buildingLineTopic.fields.find(field=>field.key==="feeParty").label="申請、測量等費用負擔人";
+    const terminationFeeParty=f("terminationFeeParty","契約解除及其他必要費用負擔人","select",["買方","賣方"]);
+    buildingLineTopic.fields.splice(buildingLineTopic.fields.findIndex(field=>field.key==="damage"),0,terminationFeeParty);
+    buildingLineTopic.template=buildingLineTopic.template.replace("契約解除及其他必要費用由{feeParty}負擔","契約解除及其他必要費用由{terminationFeeParty}負擔");
+
+    const BRIEF_SPECS={
+  "Q01.buildingLine": {
+    "group": false,
+    "label": "建築線現況及交易條件",
+    "briefTemplate": "本標的建築線由{slot1}於{slot2}前完成正式指定或查詢，費用由{slot3}負擔，並以{slot4}為本件交易條件。如無法完成或正式結果不符合約定，買方得{slot5}；解除時，賣方應於{slot6}日內無息返還全部已收價款，相關費用依{slot7}負擔。",
+    "briefBindings": {
+      "slot1": "party",
+      "slot2": "deadline",
+      "slot3": "feeParty",
+      "slot4": "condition",
+      "slot5": {
+        "field": "failure",
+        "replace": {
+          "買方得書面解除契約": "以書面解除契約"
+        }
+      },
+      "slot6": "refundDays",
+      "slot7": "terminationFeeParty"
+    },
+    "briefFields": [],
+    "briefSource": "本標的建築線由【＿＿方】於【＿＿＿＿】前完成正式指定或查詢，費用由【＿＿方】負擔，並以【＿＿＿＿】為本件交易條件。如無法完成或正式結果不符合約定，買方得【解除契約／展延期限／調整價款／其他＿＿＿＿】；解除時，賣方應於【＿＿】日內無息返還全部已收價款，相關費用依【＿＿＿＿】負擔。",
+    "briefSourceParagraphs": [
+      121
+    ]
+  },
+  "Q02.permit": {
+    "group": false,
+    "label": "建造執照與核准圖說",
+    "briefTemplate": "本件以於{slot1}前取得有效且符合{slot2}條件之建造執照為{slot3}，由{slot4}辦理並負擔費用。如未達成，依{slot5}辦理；解除時，賣方應於{slot6}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": "deadline",
+      "slot2": "minimum",
+      "slot3": "nature",
+      "slot4": "party",
+      "slot5": "failure",
+      "slot6": "refundDays"
+    },
+    "briefFields": [],
+    "briefSource": "本件以於【＿＿＿＿】前取得有效且符合【＿＿＿＿】條件之建造執照為【參考事項／交易條件】，由【＿＿方】辦理並負擔費用。如未達成，依【解除契約／展延期限／重新議價／其他＿＿＿＿】辦理；解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      142
+    ],
+    "briefSameParty": [
+      "party",
+      "feeParty"
+    ]
+  },
+  "Q03.consent": {
+    "group": false,
+    "label": "同意書、進場及回復原狀",
+    "briefTemplate": "賣方應於{slot1}前，就{slot2}交付符合約定用途、範圍及期限之土地使用同意書；過戶前得辦理之事項限於{slot3}。如無法取得或交易未完成，依{slot4}處理；解除時，賣方應於{slot5}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": "deadline",
+      "slot2": {
+        "field": "landNo",
+        "suffix": "地號",
+        "dedupe": true
+      },
+      "slot3": "access",
+      "slot4": {
+        "extra": "brief4"
+      },
+      "slot5": "refundDays"
+    },
+    "briefFields": [
+      {
+        "key": "brief4",
+        "label": "精要版－無法取得或交易未完成時處理",
+        "type": "select",
+        "options": [
+          "解除契約",
+          "撤回申請",
+          "返還同意書",
+          "回復原狀",
+          "其他"
+        ],
+        "wide": false,
+        "placeholder": "",
+        "sourceSlot": "【解除契約／撤回申請／返還同意書／回復原狀／其他＿＿＿＿】"
+      }
+    ],
+    "briefSource": "賣方應於【＿＿＿＿】前，就【＿＿＿＿地號】交付符合約定用途、範圍及期限之土地使用同意書；過戶前得辦理之事項限於【＿＿＿＿】。如無法取得或交易未完成，依【解除契約／撤回申請／返還同意書／回復原狀／其他＿＿＿＿】處理；解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      163
+    ]
+  },
+  "Q04.survey": {
+    "group": false,
+    "label": "鑑界、複丈或面積更正",
+    "briefTemplate": "本標的由{slot1}於{slot2}前辦理鑑界或複丈並負擔費用；價款找補以依法完成更正或分割登記後之登記面積為準。面積差異超過{slot3}時，依{slot4}辦理；解除時，賣方應於{slot5}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": "party",
+      "slot2": "deadline",
+      "slot3": "threshold",
+      "slot4": "failure",
+      "slot5": "refundDays"
+    },
+    "briefFields": [],
+    "briefSource": "本標的由【＿＿方】於【＿＿＿＿】前辦理鑑界或複丈並負擔費用；價款找補以依法完成更正或分割登記後之登記面積為準。面積差異超過【＿＿＿＿】時，依【重新議價／解除契約／其他＿＿＿＿】辦理；解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      184
+    ],
+    "briefSameParty": [
+      "party",
+      "feeParty"
+    ]
+  },
+  "Q05.encroachment": {
+    "group": false,
+    "label": "占用確認與排除",
+    "briefTemplate": "雙方約定由賣方於{slot1}前自費完成土地複丈；如確認有他人占用本標的或本標的越界占用鄰地，賣方應於{slot2}前自費完成排除。屆期無法排除時，買方得依複丈確認之占用面積減少買賣價款，或解除契約；解除時，賣方應於{slot3}日內無息返還全部已收價款，相關必要費用均由賣方負擔。",
+    "briefBindings": {
+      "slot1": "surveyDeadline",
+      "slot2": "removalDeadline",
+      "slot3": "refundDays"
+    },
+    "briefFields": [],
+    "briefSource": "雙方約定由賣方於【＿＿＿＿】前自費完成土地複丈；如確認有他人占用本標的或本標的越界占用鄰地，賣方應於【＿＿＿＿】前自費完成排除。屆期無法排除時，買方得依複丈確認之占用面積減少買賣價款，或解除契約；解除時，賣方應於【＿＿】日內無息返還全部已收價款，相關必要費用均由賣方負擔。",
+    "briefSourceParagraphs": [
+      205
+    ]
+  },
+  "Q06.access": {
+    "group": false,
+    "label": "道路類型、通行權源及條件",
+    "briefTemplate": "本標的現有{slot1}道路或通行情形，依據為{slot2}；本件以取得{slot3}為交易條件，由{slot4}於{slot5}前完成。未達成時依{slot6}處理；解除時，賣方應於{slot7}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": "roadType",
+      "slot2": "basis",
+      "slot3": {
+        "extra": "brief3"
+      },
+      "slot4": {
+        "extra": "brief4"
+      },
+      "slot5": {
+        "extra": "brief5"
+      },
+      "slot6": "failure",
+      "slot7": "refundDays"
+    },
+    "briefFields": [
+      {
+        "key": "brief3",
+        "label": "精要版－通行交易條件",
+        "type": "text",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "buyerHandling",
+            "minimumWidth"
+          ],
+          "labels": [
+            "承買或補正方式",
+            "最低通行寬度（公尺）"
+          ]
+        },
+        "sourceSlot": "【合法通行權源／通行寬度至少＿＿公尺／其他＿＿＿＿】"
+      },
+      {
+        "key": "brief4",
+        "label": "精要版－通行條件完成者",
+        "type": "select",
+        "options": [
+          "買方",
+          "賣方"
+        ],
+        "wide": false,
+        "placeholder": "",
+        "sourceSlot": "【＿＿方】"
+      },
+      {
+        "key": "brief5",
+        "label": "精要版－通行條件完成期限",
+        "type": "date",
+        "options": [],
+        "wide": false,
+        "placeholder": "",
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "本標的現有【＿＿＿＿】道路或通行情形，依據為【＿＿＿＿】；本件以取得【合法通行權源／通行寬度至少＿＿公尺／其他＿＿＿＿】為交易條件，由【＿＿方】於【＿＿＿＿】前完成。未達成時依【展延／重新議價／解除契約／其他＿＿＿＿】處理；解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      226
+    ]
+  },
+  "Q07.objects": {
+    "group": false,
+    "label": "物件清冊、拆除及驗收",
+    "briefTemplate": "除{slot1}由買方承受外，其餘{slot2}由{slot3}於{slot4}前拆除清運並負擔費用，拆除範圍及完成標準依附件與點交紀錄辦理。未完成時，依{slot5}辦理；解除時，賣方應於{slot6}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": "retained",
+      "slot2": "removed",
+      "slot3": "party",
+      "slot4": "deadline",
+      "slot5": "failure",
+      "slot6": "refundDays"
+    },
+    "briefFields": [],
+    "briefSource": "除【＿＿＿＿】由買方承受外，其餘【＿＿＿＿】由【＿＿方】於【＿＿＿＿】前拆除清運並負擔費用，拆除範圍及完成標準依附件與點交紀錄辦理。未完成時，依【保留價款／延期交屋／代為處理／解除契約／其他＿＿＿＿】辦理；解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      247
+    ],
+    "briefSameParty": [
+      "party",
+      "feeParty"
+    ]
+  },
+  "Q08.unregistered": {
+    "group": false,
+    "label": "事實上處分權及交付",
+    "briefTemplate": "本標的未辦保存登記建物之事實上處分權人為{slot1}，賣方應於{slot2}前提出權利來源資料並依約完成{slot3}。無法證明或交付時，買方得{slot4}；解除時，賣方應於{slot5}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": "rightsHolder",
+      "slot2": "proofDeadline",
+      "slot3": "handling",
+      "slot4": "failure",
+      "slot5": "refundDays"
+    },
+    "briefFields": [],
+    "briefSource": "本標的未辦保存登記建物之事實上處分權人為【＿＿＿＿】，賣方應於【＿＿＿＿】前提出權利來源資料並依約完成【讓與交付／拆除／其他＿＿＿＿】。無法證明或交付時，買方得【解除契約／保留價款／其他＿＿＿＿】；解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      268
+    ]
+  },
+  "Q09.control": {
+    "group": false,
+    "label": "正式查詢及排除補正",
+    "briefTemplate": "賣方應於本契約約定之備件日前，自費完成本標的套繪管制及法定空地查詢。如查有套繪管制、法定空地或其他影響買方預定用途之限制，賣方應於{slot1}前自費完成排除或補正；屆期無法完成或主管機關確認限制無法排除時，買方得解除契約，賣方應於{slot2}日內無息返還全部已收價款，相關必要費用均由賣方負擔。",
+    "briefBindings": {
+      "slot1": "deadline",
+      "slot2": "refundDays"
+    },
+    "briefFields": [],
+    "briefSource": "賣方應於本契約約定之備件日前，自費完成本標的套繪管制及法定空地查詢。如查有套繪管制、法定空地或其他影響買方預定用途之限制，賣方應於【＿＿＿＿】前自費完成排除或補正；屆期無法完成或主管機關確認限制無法排除時，買方得解除契約，賣方應於【＿＿】日內無息返還全部已收價款，相關必要費用均由賣方負擔。",
+    "briefSourceParagraphs": [
+      289
+    ]
+  },
+  "Q11.division": {
+    "group": false,
+    "label": "分割範圍、預審及面積差異",
+    "briefTemplate": "本件買受範圍以雙方簽認之分割圖為準，由{slot1}於{slot2}前完成分割登記並負擔費用；新地號及登記面積為移轉基準，面積差異或無法分割時依{slot3}處理。解除時，賣方應於{slot4}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": "party",
+      "slot2": "deadline",
+      "slot3": {
+        "extra": "brief3"
+      },
+      "slot4": "refundDays"
+    },
+    "briefFields": [
+      {
+        "key": "brief3",
+        "label": "精要版－面積差異或無法分割時處理",
+        "type": "text",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "largeDifference",
+            "failure"
+          ],
+          "labels": [
+            "面積差異",
+            "無法分割"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "本件買受範圍以雙方簽認之分割圖為準，由【＿＿方】於【＿＿＿＿】前完成分割登記並負擔費用；新地號及登記面積為移轉基準，面積差異或無法分割時依【＿＿＿＿】處理。解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      310
+    ],
+    "briefSameParty": [
+      "party",
+      "feeParty"
+    ]
+  },
+  "Q12.management": {
+    "group": false,
+    "label": "分管、管理及使用關係",
+    "briefTemplate": "買方受讓本標的應有部分{slot1}，並非取得特定位置之單獨所有權；現有分管或管理關係及其登記狀態為{slot2}。賣方應於{slot3}前完成{slot4}；未完成時，依{slot5}處理。解除時，賣方應於{slot6}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": "share",
+      "slot2": {
+        "extra": "brief2"
+      },
+      "slot3": "deadline",
+      "slot4": "handling",
+      "slot5": "failure",
+      "slot6": "refundDays"
+    },
+    "briefFields": [
+      {
+        "key": "brief2",
+        "label": "精要版－分管或管理關係及登記狀態",
+        "type": "text",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "status",
+            "registration"
+          ],
+          "labels": [
+            "管理關係",
+            "登記狀態"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "買方受讓本標的應有部分【＿＿分之＿＿】，並非取得特定位置之單獨所有權；現有分管或管理關係及其登記狀態為【＿＿＿＿】。賣方應於【＿＿＿＿】前完成【＿＿＿＿】；未完成時，依【解除契約／展延期限／減價承受／其他＿＿＿＿】處理。解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      331
+    ]
+  },
+  "Q13.crossCheck": {
+    "group": false,
+    "label": "三類線界交叉確認",
+    "briefTemplate": "本標的之地籍界址、道路境界及建築線，分別以{slot1}正式資料確認，由{slot2}於{slot3}前完成並負擔費用。如臨路或線界結果不符合{slot4}交易條件，依{slot5}處理；解除時，賣方應於{slot6}日內無息返還全部已收價款。",
+    "briefBindings": {
+      "slot1": {
+        "extra": "brief1"
+      },
+      "slot2": "party",
+      "slot3": "deadline",
+      "slot4": {
+        "extra": "brief4"
+      },
+      "slot5": "failure",
+      "slot6": "refundDays"
+    },
+    "briefFields": [
+      {
+        "key": "brief1",
+        "label": "精要版－三類線界正式資料",
+        "type": "textarea",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "landDrawing",
+            "roadDrawing",
+            "buildingDrawing"
+          ],
+          "labels": [
+            "地籍資料",
+            "道路資料",
+            "建築線資料"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      },
+      {
+        "key": "brief4",
+        "label": "精要版－臨路或線界交易條件",
+        "type": "text",
+        "options": [],
+        "wide": true,
+        "placeholder": "",
+        "fallback": {
+          "refs": [
+            "roadWidth",
+            "roadLength",
+            "otherCondition"
+          ],
+          "labels": [
+            "最低臨路寬度（公尺）",
+            "最低臨路長度（公尺）",
+            "其他條件"
+          ]
+        },
+        "sourceSlot": "【＿＿＿＿】"
+      }
+    ],
+    "briefSource": "本標的之地籍界址、道路境界及建築線，分別以【＿＿＿＿】正式資料確認，由【＿＿方】於【＿＿＿＿】前完成並負擔費用。如臨路或線界結果不符合【＿＿＿＿】交易條件，依【展延／重新議價／解除契約／其他＿＿＿＿】處理；解除時，賣方應於【＿＿】日內無息返還全部已收價款。",
+    "briefSourceParagraphs": [
+      352
+    ],
+    "briefSameParty": [
+      "party",
+      "feeParty"
+    ]
+  },
+  "Q14.shareSale": {
+    "group": false,
+    "label": "狀態一：共有人出售自己的應有部分",
+    "briefTemplate": "賣方出售其所有之應有部分{slot1}，應於{slot2}前，以本件完整相同交易條件書面通知其他共有人，並提出送達、放棄優先購買權或期限屆滿未行使之證明。如其他共有人依法行使優先購買權，雙方同意解除契約；賣方應於{slot3}日內無息返還全部已收價款，通知、解除及退款所生之相關必要費用均由賣方負擔。",
+    "briefBindings": {
+      "slot1": "saleShare",
+      "slot2": "noticeDeadline",
+      "slot3": "refundDays"
+    },
+    "briefFields": [],
+    "briefSource": "賣方出售其所有之應有部分【＿＿分之＿＿】，應於【＿＿＿＿】前，以本件完整相同交易條件書面通知其他共有人，並提出送達、放棄優先購買權或期限屆滿未行使之證明。如其他共有人依法行使優先購買權，雙方同意解除契約；賣方應於【＿＿】日內無息返還全部已收價款，通知、解除及退款所生之相關必要費用均由賣方負擔。",
+    "briefSourceParagraphs": [
+      386
+    ]
+  },
+  "Q14.article34": {
+    "group": false,
+    "label": "狀態二：依土地法第34條之1處分共有土地全部",
+    "briefTemplate": "本件由符合土地法第34條之1法定門檻之部分共有人，處分共有土地全部。賣方應於{slot1}前完成對其他共有人之書面通知或依法公告，並於移轉登記前提出其他共有人已受領應得對價或已依法提存之證明。如其他共有人依法行使優先購買權，或賣方屆期未能完成法定程序及所有權移轉，買方得解除契約；賣方應於{slot2}日內無息返還全部已收價款，相關必要費用均由賣方負擔。",
+    "briefBindings": {
+      "slot1": "noticeDeadline",
+      "slot2": "refundDays"
+    },
+    "briefFields": [],
+    "briefSource": "本件由符合土地法第34條之1法定門檻之部分共有人，處分共有土地全部。賣方應於【＿＿＿＿】前完成對其他共有人之書面通知或依法公告，並於移轉登記前提出其他共有人已受領應得對價或已依法提存之證明。如其他共有人依法行使優先購買權，或賣方屆期未能完成法定程序及所有權移轉，買方得解除契約；賣方應於【＿＿】日內無息返還全部已收價款，相關必要費用均由賣方負擔。",
+    "briefSourceParagraphs": [
+      405
+    ]
+  }
+};
+    Object.entries(BRIEF_SPECS).forEach(([id,spec])=>{
+      const [questionId,topicId]=id.split("."),question=questions.find(q=>q.id===questionId);
+      if(spec.group) question.briefGroup={id:topicId,fields:[],...spec};
+      else Object.assign(question.topics.find(topic=>topic.id===topicId),spec);
+    });
+    const state = { selected:{}, values:{}, excluded:{}, drafts:{}, manual:[], order:[], versions:{}, comparing:{}, activePanel:"pdf" };
+    const $ = (id) => document.getElementById(id);
+    const esc = (value) => String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    const keyOf = (questionId,topicId,fieldKey) => `${questionId}.${topicId}.${fieldKey}`;
+    const topicKey = (questionId,topicId) => `${questionId}.${topicId}`;
+    const isSelected = (questionId,topicId) => Boolean(state.selected[topicKey(questionId,topicId)]);
+    function isoDate(value) {
+      const text=String(value || "").trim().replace(/^民國/,""),match=text.match(/^(\d{2,4})年(\d{1,2})月(\d{1,2})日(?:\s*(\d{1,2})[時:](\d{1,2})分?)?$/);
+      if(!match) return text;
+      const year=Number(match[1])<1912?Number(match[1])+1911:Number(match[1]);
+      const date=`${year}-${match[2].padStart(2,"0")}-${match[3].padStart(2,"0")}`;
+      return match[4]?`${date}T${match[4].padStart(2,"0")}:${match[5].padStart(2,"0")}`:date;
+    }
+    function rocDate(value) {
+      const match=String(value).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$/);
+      if(!match) return value;
+      const date=`${Number(match[1])-1911}年${Number(match[2])}月${Number(match[3])}日`;
+      return match[4]?`${date}${Number(match[4])}時${Number(match[5])}分`:date;
+    }
+    function fieldVisible(question,topic,field) {
+      const value=key=>state.values[keyOf(question.id,topic.id,key)] || "";
+      if(field.when && value(field.when.key)!==field.when.equals) return false;
+      if(field.dateAlternative && value(field.dateAlternative.control)===field.dateAlternative.equals) return false;
+      return true;
+    }
+    function fieldHtml(question,topic,field) {
+      if(!fieldVisible(question,topic,field)) return "";
+      const key=keyOf(question.id,topic.id,field.key), value=topic.briefFields?.includes(field)?briefFieldValue(question,topic,field):(state.values[key] || "");
+      const cls=field.wide ? "field wide" : "field";
+      if(field.type==="select") { const otherKey=keyOf(question.id,topic.id,`${field.key}Other`), otherValue=state.values[otherKey] || ""; return `<label class="${cls}">${esc(field.label)}<select data-value-key="${esc(key)}" data-other-select="${field.options.includes("其他")?"true":"false"}"><option value="">請選擇</option>${field.options.map(o=>`<option${o===value?" selected":""}>${esc(o)}</option>`).join("")}</select></label>${field.options.includes("其他")&&value==="其他"?`<label class="${cls}">${esc(field.label)}－其他說明<input type="text" data-value-key="${esc(otherKey)}" value="${esc(otherValue)}" placeholder="請填寫其他內容" /></label>`:""}`; }
+      if(field.type==="textarea") return `<label class="${cls}">${esc(field.label)}<textarea data-value-key="${esc(key)}" placeholder="${esc(field.placeholder)}">${esc(value)}</textarea></label>`;
+      return `<label class="${cls}">${esc(field.label)}<input type="${field.type}"${field.type==="date"?' min="1912-01-01"':field.type==="datetime-local"?' min="1912-01-01T00:00"':""} data-value-key="${esc(key)}" value="${esc(value)}" placeholder="${esc(field.placeholder)}" /></label>`;
+    }
+    function generatedFullTopic(question,topic) {
+      const missing=[];
+      const text=topic.template.replace(/\{(\w+)\}/g,(_,key)=>{
+        let actualKey=key,field=topic.fields.find(item=>item.key===key);
+        let prefix="",suffix="";
+        if(question.id==="Q03"&&topic.id==="consent"&&key==="access"&&state.values[keyOf(question.id,topic.id,key)]==="得於約定範圍進場作業"){
+          actualKey="accessScope";field=topic.fields.find(item=>item.key===actualKey);prefix="得在";suffix="範圍內進場作業";
+        }
+        if(question.id==="Q02"&&topic.id==="permit"&&key==="failure"&&state.values[keyOf(question.id,topic.id,key)]==="展延至"){
+          actualKey="extensionDate";field=topic.fields.find(item=>item.key===actualKey);prefix="展延至";
+        }
+        if(question.id==="Q01"&&topic.id==="buildingLine"&&key==="condition"){
+          const selection=state.values[keyOf(question.id,topic.id,key)];
+          if(selection==="臨接位置＿＿＿＿"){actualKey="conditionPosition";prefix="臨接位置";}
+          if(selection==="臨路寬度至少＿＿公尺"){actualKey="conditionRoadWidth";prefix="臨路寬度至少";suffix="公尺";}
+          field=topic.fields.find(item=>item.key===actualKey);
+        }
+        if(field?.dateAlternative && state.values[keyOf(question.id,topic.id,field.dateAlternative.control)]===field.dateAlternative.equals){actualKey=field.dateAlternative.key;field=topic.fields.find(item=>item.key===actualKey);}
+        let value=(state.values[keyOf(question.id,topic.id,actualKey)] || "").trim();
+        if(["date","datetime-local"].includes(field?.type) && value) value=rocDate(value);
+        if(field?.type==="select" && field.options.includes("其他") && value==="其他") { const otherValue=(state.values[keyOf(question.id,topic.id,`${key}Other`)] || "").trim(); if(!otherValue){ missing.push(`${question.id} ${topic.label}：${field.label}－其他說明`); return "【其他說明尚未填寫】"; } return otherValue; }
+        if(!value){ const label=field?.label || key; missing.push(`${question.id} ${topic.label}：${label}`); return `【${label}尚未填寫】`; }
+        return `${prefix}${value}${suffix}`;
+      });
+      return { text, missing };
+    }
+    function findVersionTopic(question,id) { return question.briefGroup?.id===id?question.briefGroup:question.topics.find(topic=>topic.id===id); }
+    function versionKey(question,topic) { return topicKey(question.id,question.briefGroup?.id||topic.id); }
+    function selectedVersion(question,topic) { return state.versions[versionKey(question,topic)]||"full"; }
+    function briefFieldValue(question,topic,field) {
+      const key=keyOf(question.id,topic.id,field.key);
+      if(Object.hasOwn(state.values,key)) return state.values[key];
+      if(!field.fallback) return "";
+      const missing=[],value=resolveBriefBinding(question,topic,field.fallback,missing);
+      if(missing.length || (field.type==="select"&&!field.options.includes(value))) return "";
+      return ["date","datetime-local"].includes(field.type)?isoDate(value):value;
+    }
+    function resolveBriefBinding(question,topic,binding,missing) {
+      if(typeof binding==="string") binding={field:binding};
+      if(Object.hasOwn(binding,"literal")) return binding.literal;
+      if(binding.refs) return binding.refs.map((ref,index)=>`${binding.labels?.[index]?binding.labels[index]+"：":""}${resolveBriefBinding(question,topic,ref,missing)}`).join("；");
+      if(binding.format) return binding.format.replace(/\{(\w+)\}/g,(_,key)=>resolveBriefBinding(question,topic,key,missing));
+      if(binding.extra){
+        const field=topic.briefFields.find(item=>item.key===binding.extra);
+        let value=String(briefFieldValue(question,topic,field)||"").trim();
+        if(field.type==="select"&&value==="其他") value=String(state.values[keyOf(question.id,topic.id,field.key+"Other")]||"").trim();
+        if(!value){missing.push(`${question.id} ${topic.label}：${field.label}`);return `【${field.label}尚未填寫】`;}
+        return ["date","datetime-local"].includes(field.type)?rocDate(value):value;
+      }
+      const [targetId,fieldKey]=binding.field.includes(".")?binding.field.split("."):[topic.id,binding.field];
+      const target=findVersionTopic(question,targetId);
+      if(!target) throw new Error(`精要版欄位對應不存在：${question.id}.${binding.field}`);
+      if(target!==topic&&!isSelected(question.id,target.id)){
+        const label=target.fields.find(field=>field.key===fieldKey)?.label||fieldKey;
+        missing.push(`${question.id} ${target.label}：${label}`);return `【${label}尚未填寫】`;
+      }
+      const raw=state.values[keyOf(question.id,target.id,fieldKey)];
+      if(binding.variants?.[raw]) return resolveBriefBinding(question,target,binding.variants[raw],missing);
+      const result=generatedFullTopic(question,{...target,template:`{${fieldKey}}`});
+      missing.push(...result.missing);
+      let value=result.text;
+      if(binding.replace?.[value]) value=binding.replace[value];
+      if(binding.suffix&&(!binding.dedupe||!value.endsWith(binding.suffix))) value+=binding.suffix;
+      return value;
+    }
+    function generatedTopic(question,topic,version=selectedVersion(question,topic)) {
+      if(version==="brief"){
+        const target=question.briefGroup||topic,missing=[];
+        if(!target.briefTemplate) throw new Error(`缺少精要版原文：${question.id}.${target.id}`);
+        const text=target.briefTemplate.replace(/\{(\w+)\}/g,(_,key)=>resolveBriefBinding(question,target,target.briefBindings[key],missing));
+        return {text,missing:[...new Set(missing)]};
+      }
+      if(topic===question.briefGroup){
+        const results=question.topics.filter(item=>isSelected(question.id,item.id)).map(item=>generatedFullTopic(question,item));
+        return {text:results.map(result=>result.text).join("\n\n"),missing:results.flatMap(result=>result.missing)};
+      }
+      return generatedFullTopic(question,topic);
+    }
+    function previewHtml(question,topic) {
+      const key=versionKey(question,topic),version=selectedVersion(question,topic),comparing=Boolean(state.comparing[key]);
+      const extras=(version==="brief"||comparing)?(topic.briefFields||[]).map(field=>fieldHtml(question,topic,field)).join(""):"";
+      return `<div class="version-tools"><div class="version-switch" role="group" aria-label="${esc(question.id)}採用版本"><button type="button" data-version-topic="${key}" data-version="full" aria-pressed="${version==="full"}">完整版</button><button type="button" data-version-topic="${key}" data-version="brief" aria-pressed="${version==="brief"}">精要版</button></div><button class="btn secondary small" type="button" data-compare-topic="${key}" aria-expanded="${comparing}">${comparing?"收起比較":"比較兩版"}</button></div>${extras?`<div class="topic-fields brief-fields">${extras}</div>`:""}<div class="comparison-text selected-preview">${esc(generatedTopic(question,topic).text)}</div>${comparing?`<div class="version-comparison">${["full","brief"].map(v=>`<div><span class="preview-label">${v==="full"?"完整版":"精要版"}</span><div class="comparison-text" data-comparison-version="${v}">${esc(generatedTopic(question,topic,v).text)}</div></div>`).join("")}</div>`:""}`;
+    }
+    function refreshVersionPreview(question,topic,container) {
+      container.querySelector(".selected-preview").textContent=generatedTopic(question,topic).text;
+      container.querySelectorAll("[data-comparison-version]").forEach(element=>{element.textContent=generatedTopic(question,topic,element.dataset.comparisonVersion).text;});
+      container.querySelectorAll("[data-value-key]").forEach(input=>{
+        const key=input.dataset.valueKey;if(Object.hasOwn(state.values,key)||input===document.activeElement) return;
+        const field=topic.briefFields?.find(item=>key===keyOf(question.id,topic.id,item.key));
+        if(field) input.value=briefFieldValue(question,topic,field);
+      });
+    }
+    function bindVersionActions(container=document) {
+      container.querySelectorAll("[data-version-topic]").forEach(button=>button.addEventListener("click",()=>{
+        const key=button.dataset.versionTopic,[questionId,topicId]=key.split("."),question=questions.find(q=>q.id===questionId),topic=findVersionTopic(question,topicId);
+        if(selectedVersion(question,topic)===button.dataset.version) return;
+        const affected=question.briefGroup?[key,...question.topics.map(item=>topicKey(question.id,item.id))]:[key];
+        if(affected.some(id=>state.drafts[id]?.dirty)&&!window.confirm("此條文已有人為修改。切換版本將以新版本的系統文字取代修改內容，確定要切換嗎？")) return;
+        affected.forEach(id=>{delete state.drafts[id];});state.versions[key]=button.dataset.version;renderQuestions();updateOutput();
+      }));
+      container.querySelectorAll("[data-compare-topic]").forEach(button=>button.addEventListener("click",()=>{const key=button.dataset.compareTopic;state.comparing[key]=!state.comparing[key];renderQuestions();}));
+    }
+    function briefVersionWarnings(question,topic) {
+      if(selectedVersion(question,topic)!=="brief") return [];
+      const result=[];
+      if(topic.briefWarning) result.push(`${question.id} ${topic.briefWarning}`);
+      if(topic.briefSameParty){
+        const [a,b]=topic.briefSameParty.map(key=>state.values[keyOf(question.id,topic.id,key)]);
+        if(a&&b&&a!==b) result.push(`${question.id} 完整版的辦理人與費用負擔人不同，但精要版原文將兩者合併敘述，請比較兩版並確認是否適用。`);
+      }
+      return result;
+    }
+    function renderQuestions() {
+      $("questionList").innerHTML=questions.map((question,index)=>{
+        if(state.excluded[question.id]) return `<article class="question excluded"><div class="question-head"><div><h3 class="question-title">${question.id}　${esc(question.title)}</h3></div><button class="exclude-btn" type="button" data-restore="${question.id}" title="恢復問題">＋</button></div><div class="excluded-note">此題已排除；若與其他答案有關聯，右側仍可能顯示風險提醒。</div></article>`;
+        const activeTopics=question.topics.filter(topic=>isSelected(question.id,topic.id));
+        const details=activeTopics.map(topic=>`<section class="topic-detail"><h4>${esc(topic.label)}</h4><div class="topic-fields">${topic.fields.map(field=>fieldHtml(question,topic,field)).join("")}</div>${question.briefGroup?"":`<div class="inline-preview" data-version-preview="${versionKey(question,topic)}">${previewHtml(question,topic)}</div>`}</section>`).join("")+(question.briefGroup&&activeTopics.length?`<section class="topic-detail"><h4>${esc(question.title)}</h4><div class="inline-preview" data-version-preview="${versionKey(question,question.briefGroup)}">${previewHtml(question,question.briefGroup)}</div></section>`:"");
+        return `<article class="question"><div class="question-head"><div><h3 class="question-title">${question.id}　${esc(question.title)}</h3><span class="risk-tag ${question.risk!=="一般"?"high":""}">${esc(question.risk)}風險</span></div><button class="exclude-btn" type="button" data-exclude="${question.id}" title="排除此題">×</button></div><div class="question-body"><div class="topic-options">${question.topics.map(topic=>`<label class="check-option"><input type="${question.exclusive?"radio":"checkbox"}"${question.exclusive?` name="topic-${question.id}"`:""} data-topic="${question.id}.${topic.id}"${isSelected(question.id,topic.id)?" checked":""}/><span>${esc(topic.label)}</span></label>`).join("")}</div>${details}</div></article>`;
+      }).join("");
+      document.querySelectorAll("[data-topic]").forEach(input=>input.addEventListener("change",()=>{ const [questionId]=input.dataset.topic.split("."),question=questions.find(item=>item.id===questionId); if(question?.exclusive&&input.checked) question.topics.forEach(topic=>{ const key=topicKey(questionId,topic.id); state.selected[key]=false; delete state.drafts[key]; }); state.selected[input.dataset.topic]=input.checked; if(!input.checked) delete state.drafts[input.dataset.topic]; renderQuestions(); updateOutput(); }));
+      document.querySelectorAll("[data-value-key]").forEach(input=>{const update=()=>{
+        state.values[input.dataset.valueKey]=input.value;
+        const [questionId,topicId]=input.dataset.valueKey.split("."),question=questions.find(q=>q.id===questionId),topic=findVersionTopic(question,topicId);
+        if(input.tagName==="SELECT"){renderQuestions();updateOutput();return;}
+        const target=question.briefGroup||topic,key=versionKey(question,target),preview=document.querySelector(`[data-version-preview="${key}"]`);
+        if(preview)refreshVersionPreview(question,target,preview);updateOutput();
+      };input.addEventListener(input.tagName==="SELECT"?"change":"input",update);});
+      bindVersionActions();
+      document.querySelectorAll("[data-exclude]").forEach(button=>button.addEventListener("click",()=>{ state.excluded[button.dataset.exclude]=true; renderQuestions(); updateOutput(); }));
+      document.querySelectorAll("[data-restore]").forEach(button=>button.addEventListener("click",()=>{ delete state.excluded[button.dataset.restore]; renderQuestions(); updateOutput(); }));
+    }
+    function buildResult() {
+      const generated=[...FIXED_CLAUSES], missing=[], risks=[];
+      questions.forEach(question=>{
+        if(state.excluded[question.id]) return;
+        const activeTopics=question.topics.filter(topic=>isSelected(question.id,topic.id));
+        const outputTopics=question.briefGroup&&activeTopics.length&&selectedVersion(question,question.briefGroup)==="brief"?[question.briefGroup]:activeTopics;
+        outputTopics.forEach(topic=>{
+          const result=generatedTopic(question,topic); generated.push({id:topicKey(question.id,topic.id),text:result.text,version:selectedVersion(question,topic)}); missing.push(...result.missing);
+          briefVersionWarnings(question,topic).forEach(text=>risks.push({level:"warn",text}));
+          if(question.risk==="最高") risks.push({level:"danger",text:`${question.id} ${topic.label}屬最高風險事項，應由地政士確認文件、責任及未完成時的法律效果。`});
+          else if(question.risk==="高") risks.push({level:"warn",text:`${question.id} ${topic.label}應確認期限、責任、費用及佐證文件。`});
+        });
+      });
+      if(isSelected("Q14","shareSale") || isSelected("Q14","article34")) risks.push({level:"danger",text:"Q14 優先購買權是否成立、土地法第34條之1門檻及多人競合順位，必須由地政士依個案文件與法令確認，系統不自行判定。"});
+      if(isSelected("Q14","shareSale") && isSelected("Q14","article34")) risks.push({level:"danger",text:"Q14 兩種處分狀態具有互斥法律效果，不得同時採用，請只保留實際適用的一種。"});
+      if(state.excluded.Q14 && isSelected("Q12","management")) risks.push({level:"danger",text:"Q14 已排除，但 Q12 涉及共有土地，仍應由地政士確認處分型態、共有人通知及優先購買權。"});
+      if(isSelected("Q13","crossCheck") && (isSelected("Q01","buildingLine") || isSelected("Q04","survey") || isSelected("Q06","access"))) risks.push({level:"warn",text:"Q13 是 Q01、Q04、Q06 的交叉核對，三類線界、圖號、日期及交易條件應保持一致。"});
+      if(isSelected("Q02","permit")) risks.push({level:"warn",text:"Q02 的買賣契約約定不等於主管機關保證核發建造執照，應以正式執照及核准圖說為準。"});
+      if(isSelected("Q08","unregistered")) risks.push({level:"danger",text:"Q08 未辦保存登記建物不能以一般所有權移轉登記辦理，房屋稅籍及水電資料也不等於所有權證明。"});
+      const system=generated.map(item=>{
+        const existing=state.drafts[item.id];
+        if(!existing) state.drafts[item.id]={generated:item.text,value:item.text,dirty:false};
+        else if(!existing.dirty){ existing.generated=item.text; existing.value=item.text; }
+        else existing.generated=item.text;
+        return {id:item.id,text:state.drafts[item.id].value,dirty:state.drafts[item.id].dirty,type:"system",version:item.version};
+      });
+      const active=new Set(generated.map(item=>item.id)); Object.keys(state.drafts).forEach(id=>{ if(!active.has(id)) delete state.drafts[id]; });
+      const manual=state.manual.map(item=>({id:item.id,text:item.text,dirty:true,type:"manual"}));
+      const allItems=[...system,...manual], validIds=new Set(allItems.map(item=>item.id));
+      state.order=state.order.filter(id=>validIds.has(id));
+      system.forEach((item,systemIndex)=>{
+        if(state.order.includes(item.id)) return;
+        const previous=system.slice(0,systemIndex).map(entry=>entry.id).reverse().find(id=>state.order.includes(id));
+        if(previous) state.order.splice(state.order.indexOf(previous)+1,0,item.id);
+        else state.order.unshift(item.id);
+      });
+      manual.forEach(item=>{ if(!state.order.includes(item.id)) state.order.push(item.id); });
+      const byId=new Map(allItems.map(item=>[item.id,item]));
+      return {items:state.order.map(id=>byId.get(id)).filter(Boolean),missing:[...new Set(missing)],risks:risks.filter((item,index,array)=>array.findIndex(other=>other.text===item.text)===index)};
+    }
+    function renderClauses(items) {
+      return `<div class="clause-list">${items.map((item,index)=>`<div class="clause"><div class="clause-head"><span>${index+1}、特約條文${item.version?`<span class="version-label">${item.version==="brief"?"精要版":"完整版"}</span>`:""}</span><div class="clause-actions">${item.type==="manual"?`<span class="manual-badge added">人為新增</span><button class="btn secondary small" data-move-up="${item.id}" type="button" title="上移"${index===0?" disabled":""}>↑</button><button class="btn secondary small" data-move-down="${item.id}" type="button" title="下移"${index===items.length-1?" disabled":""}>↓</button><button class="btn danger small" data-delete-manual="${item.id}" type="button">刪除</button>`:`<span class="manual-badge" data-manual-badge="${item.id}"${item.dirty?"":" hidden"}>人為修改</span><button class="btn secondary small" data-reset-system="${item.id}" type="button">恢復系統文字</button>`}</div></div><textarea data-clause-id="${item.id}" data-clause-type="${item.type}">${esc(item.text)}</textarea></div>`).join("")}</div>`;
+    }
+    function bindClauseActions() {
+      document.querySelectorAll("[data-clause-id]").forEach(field=>field.addEventListener("input",()=>{ const id=field.dataset.clauseId; if(field.dataset.clauseType==="manual"){ const item=state.manual.find(entry=>entry.id===id); if(item) item.text=field.value; } else { const draft=state.drafts[id]; if(!draft) return; draft.value=field.value; draft.dirty=field.value!==draft.generated; const badge=document.querySelector(`[data-manual-badge="${id}"]`); if(badge) badge.hidden=!draft.dirty; } }));
+      document.querySelectorAll("[data-reset-system]").forEach(button=>button.addEventListener("click",()=>{ const draft=state.drafts[button.dataset.resetSystem]; if(draft){ draft.value=draft.generated; draft.dirty=false; updateOutput(); } }));
+      document.querySelectorAll("[data-delete-manual]").forEach(button=>button.addEventListener("click",()=>{ const id=button.dataset.deleteManual; state.manual=state.manual.filter(item=>item.id!==id); state.order=state.order.filter(itemId=>itemId!==id); updateOutput(); }));
+      const move=(id,direction)=>{ const index=state.order.indexOf(id), target=index+direction; if(index<0||target<0||target>=state.order.length) return; [state.order[index],state.order[target]]=[state.order[target],state.order[index]]; updateOutput(); };
+      document.querySelectorAll("[data-move-up]").forEach(button=>button.addEventListener("click",()=>move(button.dataset.moveUp,-1)));
+      document.querySelectorAll("[data-move-down]").forEach(button=>button.addEventListener("click",()=>move(button.dataset.moveDown,1)));
+    }
+    function updateOutput() {
+      const result=buildResult(); $("clauseOutput").innerHTML=renderClauses(result.items); bindClauseActions();
+      $("riskOutput").innerHTML=result.risks.length?`<ul class="risk-list">${result.risks.map(item=>`<li class="${item.level}">${esc(item.text)}</li>`).join("")}</ul>`:`<p class="empty-state">目前沒有高風險提醒。</p>`;
+      $("missingOutput").innerHTML=result.missing.length?`<ul class="missing-list">${result.missing.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>`:`<p class="empty-state">目前沒有待補資料。</p>`;
+      $("clauseCount").textContent=`${result.items.length} 條`; $("riskCount").textContent=`${result.risks.length} 項`; $("missingCount").textContent=`${result.missing.length} 項`;
+    }
+    function addManualClause() { state.manual.push({id:`manual-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,text:""}); updateOutput(); const fields=document.querySelectorAll('[data-clause-type="manual"]'); fields[fields.length-1]?.focus(); }
+    function switchPanel(panel) { state.activePanel=panel; document.querySelectorAll(".side-tab").forEach(button=>button.classList.toggle("active",button.dataset.panel===panel)); document.querySelectorAll("[data-panel-content]").forEach(content=>content.hidden=content.dataset.panelContent!==panel); }
+    function plainText() { const items=buildResult().items; return items.map((item,index)=>`${index+1}、${item.text}`).join("\n"); }
+    async function copyClauses() { const text=plainText(); try { await navigator.clipboard.writeText(text); } catch { const area=document.createElement("textarea"); area.value=text; document.body.appendChild(area); area.select(); document.execCommand("copy"); area.remove(); } showToast("已複製特約草稿"); }
+    function parseRocDate(value) { const text=String(value||"").trim(); const roc=text.match(/(\d{2,3})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})/); if(roc) return {year:roc[1],month:roc[2],day:roc[3]}; const numeric=text.match(/(\d{2,4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})/); if(numeric){ const year=Number(numeric[1]); return {year:String(year>1911?year-1911:year),month:numeric[2],day:numeric[3]}; } return {year:"　　",month:"　",day:"　"}; }
+    function splitClauses(clauses) {
+      // Measure with the actual print rules, isolated from the visible application.
+      const host=document.createElement("div");
+      host.style.cssText="position:fixed;left:-10000px;top:0;visibility:hidden;pointer-events:none";
+      const shadow=host.attachShadow({mode:"open"});
+      const styles=[...document.querySelectorAll("style")].map(style=>style.textContent.replace(/@media\s+print\s*\{/g,"@media all {")).join("\n");
+      shadow.innerHTML=`<style>${styles}</style><div class="print-area"><section class="contract-page"><main class="contract-content"><h1 class="contract-title">特約事項：</h1><ol class="contract-clauses"></ol></main>${signatureHtml()}</section></div>`;
+      document.body.appendChild(host);
+      try {
+        const page=shadow.querySelector(".contract-page"),content=shadow.querySelector(".contract-content"),list=shadow.querySelector("ol"),signatures=shadow.querySelector(".contract-signatures");
+        let remainingSpace=0;
+        const fits=(entries,last)=>{
+          page.classList.toggle("is-last",last);
+          list.replaceChildren(...entries.map(entry=>{
+            const li=document.createElement("li"); li.value=entry.number; li.textContent=entry.text;
+            li.classList.toggle("is-continuation",!!entry.continued); return li;
+          }));
+          const bottom=list.lastElementChild?.getBoundingClientRect().bottom||list.getBoundingClientRect().top;
+          const limit=last?Math.min(content.getBoundingClientRect().bottom,signatures.getBoundingClientRect().top-8*96/25.4):content.getBoundingClientRect().bottom;
+          remainingSpace=limit-bottom;
+          return remainingSpace>=2;
+        };
+        const pending=clauses.map((text,index)=>({text:String(text),number:index+1,continued:false})),pages=[];
+        while(pending.length){
+          if(fits(pending,true)){pages.push(pending.splice(0));break;}
+          const current=[];
+          while(pending.length&&fits([...current,pending[0]],false)) current.push(pending.shift());
+          if(pending.length){
+            // Fill remaining space; continue a split clause without renumbering it.
+            const entry=pending[0],characters=Array.from(entry.text);
+            let low=1,high=characters.length,best=0;
+            while(low<=high){
+              const middle=Math.floor((low+high)/2);
+              if(fits([...current,{...entry,text:characters.slice(0,middle).join("")}],false)){best=middle;low=middle+1;}else high=middle-1;
+            }
+            // Avoid leaving a lone punctuation mark or one-line tail on the next page.
+            if(best>0&&best<characters.length){
+              fits([{...entry,text:characters.slice(best).join("")}],false);
+              const lineHeight=parseFloat(getComputedStyle(list).lineHeight);
+              if(list.lastElementChild.getBoundingClientRect().height<2*lineHeight){
+                let left=1,right=best,safe=0;
+                while(left<=right){
+                  const middle=Math.floor((left+right)/2);
+                  fits([{...entry,text:characters.slice(middle).join("")}],false);
+                  if(list.lastElementChild.getBoundingClientRect().height>=2*lineHeight){safe=middle;left=middle+1;}else right=middle-1;
+                }
+                best=safe;
+              }
+            }
+            if(best>0&&/^[。；，、：！？.!?;:,）】」』]/u.test(characters.slice(best).join("").trimStart())) best=Math.max(1,best-24);
+            if(best){
+              current.push({...entry,text:characters.slice(0,best).join("")});
+              pending[0]={...entry,text:characters.slice(best).join(""),continued:true};
+            } else if(!current.length) throw new Error("PDF 條文無法排入頁面");
+          }
+          // Keep the preceding page full; move only a short final clause or tail.
+          if(!pending.length&&!fits(current,true)){
+            const entry=current.at(-1),lineHeight=parseFloat(getComputedStyle(list).lineHeight);
+            const wholeFits=fits([entry],true),entryHeight=list.lastElementChild.getBoundingClientRect().height;
+            if(current.length>1&&wholeFits&&entryHeight<=5*lineHeight){
+              pages.push(current.slice(0,-1),[entry]);break;
+            }
+            const characters=Array.from(entry.text);
+            let low=1,high=characters.length-1,best=null;
+            while(low<=high){
+              const middle=Math.floor((low+high)/2);
+              const cut=/^[。；，、：！？.!?;:,）】」』]/u.test(characters.slice(middle).join("").trimStart())?Math.max(1,middle-24):middle;
+              const prefix=[...current.slice(0,-1),{...entry,text:characters.slice(0,cut).join("")}];
+              const suffix=[{...entry,text:characters.slice(cut).join(""),continued:true}];
+              const prefixFits=fits(prefix,false),suffixFits=fits(suffix,true);
+              const tailHeight=list.lastElementChild.getBoundingClientRect().height;
+              if(prefixFits&&suffixFits&&tailHeight>=3*lineHeight) best={prefix,suffix};
+              if(tailHeight>=3*lineHeight) low=middle+1; else high=middle-1;
+            }
+            if(!best) throw new Error("PDF 簽章頁無法完成分頁");
+            pages.push(best.prefix,best.suffix);break;
+          }
+          pages.push(current);
+        }
+        return pages.length?pages:[[]];
+      } finally { host.remove(); }
+    }
+    function signatureHtml() {
+      const date=parseRocDate(document.querySelector('[data-case="contractDate"]').value);
+      return `<footer class="contract-signatures"><div class="signature-row"><span class="signature-label">買方簽章：</span><span class="signature-line"></span><span class="signature-seal"></span></div><div class="signature-row"><span class="signature-label">賣方簽章：</span><span class="signature-line"></span><span class="signature-seal"></span></div><div class="contract-date"><span>中華民國</span><span>${esc(date.year)} 年</span><span>${esc(date.month)} 月</span><span>${esc(date.day)} 日</span></div></footer>`;
+    }
+    function printDocument(items) {
+      const contractNo=document.querySelector('[data-case="contractNo"]').value.trim(),pages=splitClauses(items.map(item=>item.text));
+      return pages.map((clauses,pageIndex)=>{
+        const last=pageIndex===pages.length-1;
+        return `<section class="contract-page${last?" is-last":""}"><header class="contract-header"><img class="contract-brand" src="assets/yiqing-header.png" alt="宜慶地政 服務專線 06-2951356"/><div class="contract-number">契約書編號：<span class="contract-number-value">${esc(contractNo)}</span></div></header><img class="contract-watermark" src="assets/yiqing-watermark.png" alt=""/><main class="contract-content"><h1 class="contract-title">特約事項：</h1><ol class="contract-clauses">${clauses.map(entry=>`<li value="${entry.number}"${entry.continued?' class="is-continuation"':""}>${esc(entry.text)}</li>`).join("")}</ol></main>${last?signatureHtml():""}</section>`;
+      }).join("");
+    }
+    async function waitForPrintLayout(container) {
+      const images=[...container.querySelectorAll("img")];
+      await Promise.all(images.map(async image=>{
+        if(!image.complete) await new Promise(resolve=>{ image.addEventListener("load",resolve,{once:true}); image.addEventListener("error",resolve,{once:true}); });
+        if(image.decode) { try { await image.decode(); } catch {} }
+      }));
+      if(document.fonts?.ready) await document.fonts.ready;
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    }
+    async function exportPdf() { const result=buildResult(),area=$("printArea"); showToast("正在準備 PDF 格式"); if(document.fonts?.ready) await document.fonts.ready; area.innerHTML=printDocument(result.items); await waitForPrintLayout(area); showToast("請在列印視窗選擇另存為 PDF"); window.print(); }
+    function showToast(text) { const toast=$("toast"); toast.textContent=text; toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>toast.classList.remove("show"),1800); }
+    function resetAll() { state.selected={}; state.values={}; state.excluded={}; state.drafts={}; state.manual=[]; state.order=[]; state.versions={}; state.comparing={}; document.querySelectorAll("[data-case]").forEach(input=>input.value=""); $("printArea").innerHTML=""; renderQuestions(); updateOutput(); switchPanel("pdf"); showToast("已恢復初始狀態"); }
+    function confirmReset() { if(window.confirm("確定要恢復初始狀態嗎？目前填寫的答案、人工條文及修改內容都會被清除，且無法復原。")) resetAll(); }
+    function loadSample() {
+      resetAll(); document.querySelector('[data-case="contractNo"]').value="1151013002"; document.querySelector('[data-case="contractDate"]').value="115年10月13日";
+      state.selected["Q04.survey"]=true; state.values["Q04.survey.party"]="賣方"; state.values["Q04.survey.deadline"]="115年11月30日"; state.values["Q04.survey.office"]="臺南"; state.values["Q04.survey.application"]="鑑界"; state.values["Q04.survey.feeParty"]="賣方"; state.values["Q04.survey.adjustment"]="按平方公尺單價找補"; state.values["Q04.survey.unitPrice"]="新臺幣30,000元"; state.values["Q04.survey.threshold"]="百分之一"; state.values["Q04.survey.decisionDays"]="7"; state.values["Q04.survey.failure"]="重新議價"; state.values["Q04.survey.refundDays"]="7"; state.values["Q04.survey.dispute"]="調處";
+      state.selected["Q09.control"]=true; state.values["Q09.control.status"]="涉及套繪管制"; state.values["Q09.control.restriction"]="部分土地涉及原建造執照套繪"; state.values["Q09.control.deadline"]="115年12月31日"; state.values["Q09.control.handling"]="取得主管機關確認"; state.values["Q09.control.refundDays"]="7";
+      questions.forEach(question=>question.topics.forEach(topic=>topic.fields.filter(field=>["date","datetime-local"].includes(field.type)).forEach(field=>{const key=keyOf(question.id,topic.id,field.key);if(state.values[key]) state.values[key]=isoDate(state.values[key]);})));
+      renderQuestions(); updateOutput(); showToast("已載入範例");
+    }
+    document.querySelectorAll(".side-tab").forEach(button=>button.addEventListener("click",()=>switchPanel(button.dataset.panel)));
+    document.querySelectorAll("[data-case]").forEach(input=>input.addEventListener("input",updateOutput));
+    $("addClauseBtn").addEventListener("click",addManualClause); $("copyBtn").addEventListener("click",copyClauses); $("downloadBtn").addEventListener("click",exportPdf); $("resetBtn").addEventListener("click",confirmReset); $("loadSampleBtn").addEventListener("click",loadSample);
+    renderQuestions(); updateOutput(); switchPanel("pdf");
+  </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f4f8f6" />
+  <title>林宜慶地政士事務所</title>
+  <style>
+    :root { color-scheme:light; --paper:#f4f8f6; --signal:#247d65; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; width:100%; min-height:100%; }
+    body { background:#f5f7f7; font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; letter-spacing:0; }
+    .entrance { position:relative; display:grid; grid-template-columns:minmax(0,1fr); place-items:center; width:100%; min-height:100svh; isolation:isolate; overflow:hidden; }
+    .shutter { position:absolute; inset:0; z-index:-1; background:var(--paper); }
+    .shutter.top { clip-path:polygon(0 0,100% 0,100% 50%,0 50%); }
+    .shutter.bottom { clip-path:polygon(0 50%,100% 50%,100% 100%,0 100%); }
+    .blade { position:absolute; z-index:0; top:-10%; bottom:-10%; left:calc(var(--i)*20% - 8%); width:36%; background:#e9f2ed; opacity:0; pointer-events:none; clip-path:polygon(38% 0,100% 0,62% 100%,0 100%); }
+    .blade:nth-of-type(even) { background:#e1f0f1; }
+    .blade::after { content:""; position:absolute; top:0; bottom:0; left:38%; width:1px; background:#87bfae; transform:skewX(-12deg); }
+    .logo-link { position:relative; display:block; width:560px; max-width:82%; color:var(--signal); text-decoration:none; outline-offset:24px; -webkit-tap-highlight-color:transparent; }
+    .logo-link:focus-visible { outline:2px solid var(--signal); }
+    .wordmark { position:relative; display:block; width:100%; aspect-ratio:1100 / 271; overflow:hidden; }
+    .wordmark img { display:block; width:234.545455%; height:100%; max-width:none; transition:filter .25s,opacity .25s; }
+    .logo-link:hover .wordmark img { filter:brightness(1.22); }
+    .wordmark::before,.wordmark::after { content:""; position:absolute; inset:0; background:url("assets/yiqing-header.png") left top / 234.545455% 100% no-repeat; opacity:0; pointer-events:none; }
+    .wordmark::before { clip-path:inset(0 0 54%); filter:hue-rotate(34deg); }
+    .wordmark::after { clip-path:inset(54% 0 0); filter:hue-rotate(-35deg); }
+    .bracket { position:absolute; width:17px; height:17px; opacity:0; border-color:currentColor; border-style:solid; transition:opacity .25s,transform .25s; }
+    .bracket.tl { top:-24px; left:-24px; border-width:1px 0 0 1px; transform:translate(-6px,-6px); }
+    .bracket.tr { top:-24px; right:-24px; border-width:1px 1px 0 0; transform:translate(6px,-6px); }
+    .bracket.bl { bottom:-24px; left:-24px; border-width:0 0 1px 1px; transform:translate(-6px,6px); }
+    .bracket.br { bottom:-24px; right:-24px; border-width:0 1px 1px 0; transform:translate(6px,6px); }
+    .logo-link:hover .bracket,.logo-link:focus-visible .bracket { opacity:.65; transform:translate(0,0); }
+    .circuit { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:0; }
+    .scan-line { position:absolute; top:0; bottom:0; left:-2px; width:2px; background:#4aab91; box-shadow:0 0 12px #4aab9166,8px 0 0 #8dcfc244; opacity:0; pointer-events:none; }
+    .seam { position:absolute; top:50%; left:0; right:0; height:1px; background:var(--signal); transform:scaleX(0); opacity:0; pointer-events:none; }
+    .entering .logo-link { pointer-events:none; animation:logo-out 1.2s cubic-bezier(.2,.7,.2,1) both; }
+    .entering .wordmark::before { animation:echo-top .65s .16s ease-out both; }
+    .entering .wordmark::after { animation:echo-bottom .65s .16s ease-out both; }
+    .entering .bracket { opacity:1; transform:translate(0,0); }
+    .entering .circuit { animation:circuit-out 1.55s ease both; }
+    .entering .scan-line { animation:scan .7s cubic-bezier(.4,0,.2,1) both; }
+    .entering .seam { animation:seam .85s .18s ease both; }
+    .entering .shutter.top { animation:open-top .85s .65s cubic-bezier(.76,0,.24,1) both; }
+    .entering .shutter.bottom { animation:open-bottom .85s .65s cubic-bezier(.76,0,.24,1) both; }
+    .entering .blade { animation:blade-out 1.15s calc(.16s + var(--i)*.055s) cubic-bezier(.65,0,.2,1) both; }
+    @keyframes logo-out { 0%,25% { transform:scale(1); opacity:1; } 48% { transform:scale(1.035); opacity:1; } 100% { transform:scale(1.65); opacity:0; } }
+    @keyframes echo-top { 0%,100% { opacity:0; transform:translateX(0); } 35% { opacity:.45; transform:translateX(8px); } }
+    @keyframes echo-bottom { 0%,100% { opacity:0; transform:translateX(0); } 35% { opacity:.35; transform:translateX(-8px); } }
+    @keyframes circuit-out { 0% { opacity:0; } 15%,72% { opacity:1; } 100% { opacity:0; } }
+    @keyframes blade-out { 0% { opacity:0; transform:translateY(0); } 24% { opacity:.7; transform:translateY(0); } 100% { opacity:0; transform:translateY(calc(var(--direction)*125%)); } }
+    @keyframes scan { 0% { left:0; opacity:0; } 12%,80% { opacity:.8; } 100% { left:100%; opacity:0; } }
+    @keyframes seam { 0% { transform:scaleX(0); opacity:0; } 48% { transform:scaleX(1); opacity:.8; } 100% { transform:scaleX(1); opacity:0; } }
+    @keyframes open-top { to { transform:translateY(-52%); } }
+    @keyframes open-bottom { to { transform:translateY(52%); } }
+    @media (max-width:600px) {
+      .logo-link { max-width:78%; }
+      .bracket.tl,.bracket.bl { left:-16px; }
+      .bracket.tr,.bracket.br { right:-16px; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      .wordmark img,.bracket { transition:none; }
+      .entering .logo-link { animation:none; opacity:0; }
+      .entering .shutter { animation:none; opacity:0; }
+      .entering .circuit,.entering .scan-line,.entering .seam,.entering .blade,.entering .wordmark::before,.entering .wordmark::after { animation:none; display:none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="entrance" id="entrance">
+    <div class="shutter top" aria-hidden="true"></div>
+    <div class="shutter bottom" aria-hidden="true"></div>
+    <div class="blade" style="--i:0;--direction:-1" aria-hidden="true"></div>
+    <div class="blade" style="--i:1;--direction:1" aria-hidden="true"></div>
+    <div class="blade" style="--i:2;--direction:-1" aria-hidden="true"></div>
+    <div class="blade" style="--i:3;--direction:1" aria-hidden="true"></div>
+    <div class="blade" style="--i:4;--direction:-1" aria-hidden="true"></div>
+    <canvas class="circuit" id="circuit" aria-hidden="true"></canvas>
+    <a class="logo-link" id="enterLink" href="index.html" aria-label="林宜慶地政士事務所，進入特約事項工作台">
+      <span class="wordmark"><img src="assets/yiqing-header.png" width="2580" height="271" alt="宜慶地政" draggable="false" /></span>
+      <span class="bracket tl" aria-hidden="true"></span><span class="bracket tr" aria-hidden="true"></span>
+      <span class="bracket bl" aria-hidden="true"></span><span class="bracket br" aria-hidden="true"></span>
+    </a>
+    <div class="scan-line" aria-hidden="true"></div>
+    <div class="seam" aria-hidden="true"></div>
+  </main>
+  <script>
+    const entrance=document.getElementById("entrance"),link=document.getElementById("enterLink"),canvas=document.getElementById("circuit");
+    const reducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
+    let entering=false,timer=0,frame=0;
+    function animateCircuit(){
+      const context=canvas.getContext("2d");
+      if(!context) return;
+      const width=window.innerWidth,height=entrance.clientHeight,ratio=Math.min(window.devicePixelRatio||1,2);
+      canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);context.scale(ratio,ratio);
+      const cx=width/2,cy=height/2,start=performance.now();
+      const paths=Array.from({length:16},(_,index)=>{
+        const side=index%2===0?-1:1,offset=(Math.floor(index/2)-2.5)*52;
+        return [[cx+side*(width/2+20),cy+offset*1.8],[cx+side*width*.32,cy+offset*1.8],[cx+side*(width*.32-36),cy+offset],[cx+side*width*.21,cy+offset]];
+      });
+      function draw(now){
+        const elapsed=now-start,progress=Math.min(elapsed/620,1);context.clearRect(0,0,width,height);
+        paths.forEach((points,index)=>{
+          const amount=Math.max(0,Math.min(1,progress*1.5-index*.035));
+          context.strokeStyle=index%4===0?"#b29450":index%3===0?"#4b9eaf":"#379b7e";context.lineWidth=1.2;context.globalAlpha=.55;
+          context.beginPath();context.moveTo(...points[0]);
+          for(let i=1;i<points.length;i++){
+            const segment=Math.max(0,Math.min(1,amount*(points.length-1)-(i-1)));
+            const x=points[i-1][0]+(points[i][0]-points[i-1][0])*segment,y=points[i-1][1]+(points[i][1]-points[i-1][1])*segment;
+            context.lineTo(x,y);if(segment<1) break;
+          }
+          context.stroke();
+        });
+        // Expanding architectural frames create depth without flashing the screen.
+        for(let index=0;index<8;index++){
+          const phase=elapsed/1050-index*.085;
+          if(phase<=0||phase>=1.3) continue;
+          const scale=phase*phase,halfWidth=width*.78*scale+20,halfHeight=height*.76*scale+12,cut=Math.min(halfWidth*.18,32);
+          context.globalAlpha=Math.min(1,phase*3)*Math.max(0,1-phase)*.65;
+          context.strokeStyle=index%3===0?"#b29450":index%2===0?"#3b9eac":"#398e72";context.lineWidth=index===0?1.8:1;
+          context.beginPath();context.moveTo(cx-halfWidth+cut,cy-halfHeight);
+          context.lineTo(cx+halfWidth-cut,cy-halfHeight);context.lineTo(cx+halfWidth,cy-halfHeight+cut);
+          context.lineTo(cx+halfWidth,cy+halfHeight-cut);context.lineTo(cx+halfWidth-cut,cy+halfHeight);
+          context.lineTo(cx-halfWidth+cut,cy+halfHeight);context.lineTo(cx-halfWidth,cy+halfHeight-cut);
+          context.lineTo(cx-halfWidth,cy-halfHeight+cut);context.closePath();context.stroke();
+          const tick=7;
+          for(const side of [-1,1]){
+            context.fillRect(cx+side*(halfWidth-cut)-2,cy-halfHeight-2,4,4);
+            context.beginPath();context.moveTo(cx+side*halfWidth,cy-tick);context.lineTo(cx+side*halfWidth,cy+tick);context.stroke();
+          }
+        }
+        if(elapsed<1550) frame=requestAnimationFrame(draw);
+      }
+      frame=requestAnimationFrame(draw);
+    }
+    link.addEventListener("click",event=>{
+      if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey) return;
+      event.preventDefault();if(entering) return;
+      entering=true;link.setAttribute("aria-busy","true");entrance.classList.add("entering");
+      if(!reducedMotion.matches){try{animateCircuit();}catch{cancelAnimationFrame(frame);}}
+      timer=window.setTimeout(()=>window.location.assign(link.href),reducedMotion.matches?60:1650);
+    });
+    window.addEventListener("pageshow",()=>{
+      window.clearTimeout(timer);cancelAnimationFrame(frame);entering=false;
+      entrance.classList.remove("entering");link.removeAttribute("aria-busy");
+    });
+  </script>
+</body>
+</html>
